@@ -4,8 +4,6 @@
  * http://www.apache.org/licenses/LICENSE-2.0
  */
 
-@file:Suppress("SameReturnValue")
-
 package io.github.proify.lyricon.central.internal
 
 /**
@@ -16,7 +14,7 @@ package io.github.proify.lyricon.central.internal
 internal object CentralConstants {
 
     /** 调试开关。 */
-    fun isDebug(): Boolean = false
+    const val DEBUG: Boolean = false
 
     /** 注册提供端广播动作。 */
     internal const val ACTION_REGISTER_PROVIDER: String =

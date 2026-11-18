@@ -27,8 +27,6 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.sync.Mutex
-import kotlinx.coroutines.sync.withLock
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.decodeFromStream
 import java.util.concurrent.atomic.AtomicBoolean
@@ -48,7 +46,6 @@ internal class RemotePlayerStub(
     private val session = PlayerSession(info)
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
     private val closed = AtomicBoolean(false)
-    private val closeMutex = Mutex()
     private val positionTracker = PlaybackStateTracker()
     private val positionMemory = PositionMemoryChannel()
     private val positionTicker = PositionTicker(
@@ -83,12 +80,8 @@ internal class RemotePlayerStub(
         stopPositionUpdate()
 
         lyricQueue.cancel()
-        scope.launch {
-            closeMutex.withLock {
-                positionMemory.close()
-                scope.cancel()
-            }
-        }
+        positionMemory.close()
+        scope.cancel()
     }
 
     override fun onScreenOn() {
@@ -199,6 +192,7 @@ internal class RemotePlayerStub(
     /** 解码并应用一首歌曲（由歌曲队列的消费者按序调用）。 */
     @OptIn(ExperimentalSerializationApi::class)
     private fun processSong(bytes: ByteArray?) {
+        if (closed.get()) return
         val song = bytes?.let {
             runCatching {
                 it.inflate()
@@ -213,6 +207,7 @@ internal class RemotePlayerStub(
         val normalized = runCatching { song?.normalize() }
             .onFailure { Log.e(TAG, "Failed to normalize song", it) }
             .getOrNull()
+        if (closed.get()) return
         session.setSong(normalized)
         playerEvents.safeNotify { onSongChanged(session, normalized) }
     }
@@ -237,6 +232,7 @@ internal class RemotePlayerStub(
     }
 
     private fun processText(text: String?) {
+        if (closed.get()) return
         session.setText(text)
         playerEvents.safeNotify { onText(session, text) }
     }
@@ -254,6 +250,7 @@ internal class RemotePlayerStub(
 
     /** 轮询回调：写入会话并广播位置变化。 */
     private fun publishPosition(position: Long) {
+        if (closed.get()) return
         session.setPosition(position)
         playerEvents.safeNotify { onPositionChanged(session, position) }
     }

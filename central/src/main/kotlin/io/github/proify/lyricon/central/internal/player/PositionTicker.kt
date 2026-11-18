@@ -12,15 +12,13 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.sync.Mutex
-import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.yield
 
 /**
  * 播放位置轮询器：按固定间隔读取位置并回调。
  *
  * 使用 elapsedRealtime 校正漂移；start/stop 可被幂等地重复调用，
- * 内部用 Mutex 保证任务切换的原子性。
+ * 由 @Synchronized 串行化任务切换。
  *
  * @property scope 宿主协程作用域。
  * @property readPosition 位置读取源。
@@ -32,8 +30,6 @@ internal class PositionTicker(
     private val onPosition: (Long) -> Unit
 ) {
 
-    private val mutex = Mutex()
-
     @Volatile
     private var job: Job? = null
 
@@ -42,46 +38,34 @@ internal class PositionTicker(
      *
      * @param interval 轮询间隔（毫秒），最小 16ms。
      */
+    @Synchronized
     fun start(interval: Long) {
         if (job?.isActive == true) return
+        job?.cancel()
+        job = scope.launch {
+            val safeInterval = interval.coerceAtLeast(MIN_INTERVAL_MS)
+            var nextTick = SystemClock.elapsedRealtime()
 
-        scope.launch {
-            mutex.withLock {
-                if (job?.isActive == true) return@withLock
+            while (isActive) {
+                onPosition(readPosition())
+                nextTick += safeInterval
 
-                job = scope.launch {
-                    val safeInterval = interval.coerceAtLeast(MIN_INTERVAL_MS)
-                    var nextTick = SystemClock.elapsedRealtime()
-
-                    while (isActive) {
-                        onPosition(readPosition())
-                        nextTick += safeInterval
-
-                        val remaining = nextTick - SystemClock.elapsedRealtime()
-                        if (remaining > 0) {
-                            delay(remaining)
-                        } else {
-                            nextTick = SystemClock.elapsedRealtime()
-                            yield()
-                        }
-                    }
+                val remaining = nextTick - SystemClock.elapsedRealtime()
+                if (remaining > 0) {
+                    delay(remaining)
+                } else {
+                    nextTick = SystemClock.elapsedRealtime()
+                    yield()
                 }
             }
         }
     }
 
     /** 停止轮询（若未运行则为空操作）。 */
+    @Synchronized
     fun stop() {
-        val current = job
-        current?.cancel()
-
-        if (current != null) {
-            scope.launch {
-                mutex.withLock {
-                    if (job === current) job = null
-                }
-            }
-        }
+        job?.cancel()
+        job = null
     }
 
     /** 停止轮询并释放资源。 */

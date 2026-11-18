@@ -27,7 +27,7 @@ import kotlin.concurrent.write
  */
 internal class ActivePlayerHub : PlayerListener {
 
-    private val debug = CentralConstants.isDebug()
+    private val debug = CentralConstants.DEBUG
     private val lock = ReentrantReadWriteLock()
     private val listeners = CopyOnWriteArraySet<ActivePlayerListener>()
     private val selector = ActivePlayerSelector()

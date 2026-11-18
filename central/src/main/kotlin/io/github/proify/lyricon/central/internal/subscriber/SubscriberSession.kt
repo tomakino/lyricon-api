@@ -15,9 +15,6 @@ import io.github.proify.lyricon.central.provider.player.ActivePlayerListener
 import io.github.proify.lyricon.lyric.model.Song
 import io.github.proify.lyricon.provider.ProviderInfo
 import io.github.proify.lyricon.subscriber.IActivePlayerListener
-import kotlinx.serialization.ExperimentalSerializationApi
-import kotlinx.serialization.json.encodeToStream
-import java.io.ByteArrayOutputStream
 import java.nio.ByteBuffer
 
 /**
@@ -26,7 +23,6 @@ import java.nio.ByteBuffer
  * 作为 [ActivePlayerListener] 注册到活跃播放器中枢，把状态事件转换为
  * 订阅端 AIDL 回调；位置经共享内存写入，歌曲/提供端信息序列化后传输。
  */
-@OptIn(ExperimentalSerializationApi::class)
 internal class SubscriberSession : ActivePlayerListener {
 
     /** 订阅端的活跃播放器监听器。 */
@@ -50,9 +46,7 @@ internal class SubscriberSession : ActivePlayerListener {
             return
         }
 
-        val out = ByteArrayOutputStream()
-        json.encodeToStream(providerInfo, out)
-        remoteListener?.onActiveProviderChanged(out.toByteArray())
+        remoteListener?.onActiveProviderChanged(json.encodeToString(providerInfo).toByteArray())
     }
 
     override fun onSongChanged(song: Song?) {

@@ -89,14 +89,19 @@ internal class ProviderConnection(
         }
     }
 
-    override fun close() {
+    override fun close() = close(notifyActivePlayer = true)
+
+    /** 丢弃尚未注册的连接；不通知活跃播放器。 */
+    fun discard() = close(notifyActivePlayer = false)
+
+    private fun close(notifyActivePlayer: Boolean) {
         if (!closed.compareAndSet(false, true)) return
         synchronized(this) {
             deathTracker.detach()
             binder = null
         }
         service.close()
-        activePlayers.notifyProviderInvalid(providerInfo)
+        if (notifyActivePlayer) activePlayers.notifyProviderInvalid(providerInfo)
     }
 
     override fun toString() = "ProviderConnection{$providerInfo}"

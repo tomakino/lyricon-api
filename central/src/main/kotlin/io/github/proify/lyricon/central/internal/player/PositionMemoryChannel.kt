@@ -29,6 +29,7 @@ internal class PositionMemoryChannel {
     }
 
     /** 读取最近一次写入的位置（毫秒，非负）；失败时返回 0。 */
+    @Synchronized
     fun readPosition(): Long = try {
         readBuffer?.getLong(POSITION_OFFSET)?.coerceAtLeast(0L) ?: 0L
     } catch (_: Throwable) {
@@ -36,6 +37,7 @@ internal class PositionMemoryChannel {
     }
 
     /** 释放共享内存与映射。 */
+    @Synchronized
     fun close() {
         readBuffer?.let { runCatching { SharedMemory.unmap(it) } }
         sharedMemory?.close()

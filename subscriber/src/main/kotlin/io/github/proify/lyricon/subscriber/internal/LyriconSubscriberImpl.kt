@@ -30,6 +30,8 @@ import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.util.concurrent.CopyOnWriteArraySet
+import java.util.concurrent.Executors
+import java.util.concurrent.RejectedExecutionException
 import java.util.concurrent.atomic.AtomicBoolean
 
 /**
@@ -45,6 +47,12 @@ internal class LyriconSubscriberImpl(
 ) : LyriconSubscriber {
     private val destroyed = AtomicBoolean(false)
     private val listeners = CopyOnWriteArraySet<ConnectionListener>()
+    private val eventExecutor = Executors.newSingleThreadExecutor { runnable ->
+        Thread(runnable, "lyricon-subscriber-events")
+    }
+
+    @Volatile
+    private var connectionGeneration: Long = 0
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
     private val remote =
         SubscriberLink { disconnect(remote = true, notifyRemote = false) }
@@ -84,15 +92,7 @@ internal class LyriconSubscriberImpl(
         disconnect(remote = false, destroy = true)
         scope.cancel()
         listeners.clear()
-    }
-
-    /** 注册成功：标记连接、绑定远端服务并通知监听器（区分首次与重连）。 */
-    private fun onRegistered(service: IRemoteService?, reconnect: Boolean) {
-        registration.markConnected()
-        remote.bind(service)
-        listeners.forEach {
-            if (reconnect) it.onReconnected(this) else it.onConnected(this)
-        }
+        eventExecutor.shutdown()
     }
 
     /**
@@ -109,8 +109,23 @@ internal class LyriconSubscriberImpl(
     ) {
         registration.abortAttempt()
         this.remote.disconnect(notifyRemote, destroy)
-        registration.markDisconnected(remote)
-        listeners.forEach { it.onDisconnected(this) }
+        val generation = registration.markDisconnected(remote)
+        dispatchEvent(generation) { it.onDisconnected(this) }
+    }
+
+    /** 串行投递连接事件；代次失效或执行器已关闭时丢弃。 */
+    private fun dispatchEvent(generation: Long, block: (ConnectionListener) -> Unit) {
+        if (eventExecutor.isShutdown) return
+        try {
+            eventExecutor.execute {
+                if (generation != connectionGeneration) return@execute
+                listeners.forEach { listener ->
+                    runCatching { block(listener) }
+                }
+            }
+        } catch (_: RejectedExecutionException) {
+            // 销毁竞态：事件已无接收方。
+        }
     }
 
     /**
@@ -151,34 +166,62 @@ internal class LyriconSubscriberImpl(
         }
 
         /** 标记为断开。 */
-        fun markDisconnected(byRemote: Boolean) {
+        @Synchronized
+        fun markDisconnected(byRemote: Boolean): Long {
+            connectionGeneration++
             status =
                 if (byRemote) SubscriberStatus.DISCONNECTED_BY_REMOTE
                 else SubscriberStatus.DISCONNECTED
+            return connectionGeneration
         }
 
         private val attempt = object : RegistrationBinder.RegistrationCallback {
             override fun onCompleted(service: IRemoteService?) {
-                onAttemptCompleted(service)
+                val result = onAttemptCompleted(service) ?: return
+                notifyRegistered(result.first, result.second)
             }
         }
 
+        /**
+         * 锁内完成绑定与状态发布；返回是否需要通知监听器及是否重连。
+         *
+         * @return null 表示不通知；false 表示首次连接；true 表示重连
+         */
         @Synchronized
-        private fun onAttemptCompleted(service: IRemoteService?) {
+        private fun onAttemptCompleted(service: IRemoteService?): Pair<Boolean, Long>? {
             cancelTimeout()
             retryDelayMs = INITIAL_RETRY_DELAY_MS
-            if (!wantsConnection || destroyed.get()) return
+            if (!wantsConnection || destroyed.get()) return null
 
             if (service == null) {
                 // 中心返回空服务（异常路径）：不标记连接，按失败路径继续重试。
                 Log.w(TAG, "Central returned null service, registration rejected")
                 status = SubscriberStatus.DISCONNECTED
                 scheduleRetry()
-                return
+                return null
             }
+
+            remote.bind(service)
+            status = SubscriberStatus.CONNECTED
             timeoutNotified = false
-            this@LyriconSubscriberImpl.onRegistered(service, reconnect)
+            return reconnect to ++connectionGeneration
         }
+
+        /** 通知监听器；代次已失效时跳过。 */
+        private fun notifyRegistered(reconnect: Boolean, generation: Long) {
+            dispatchEvent(generation) {
+                if (isConnectionCurrent(generation)) {
+                    if (reconnect) it.onReconnected(this@LyriconSubscriberImpl)
+                    else it.onConnected(this@LyriconSubscriberImpl)
+                }
+            }
+        }
+
+        private fun isConnectionCurrent(generation: Long): Boolean =
+            generation == connectionGeneration &&
+                wantsConnection &&
+                !destroyed.get() &&
+                status.isConnected()
 
         init {
             CentralBootReceiver.addBootListener(this)
@@ -200,6 +243,7 @@ internal class LyriconSubscriberImpl(
                 retryDelayMs = INITIAL_RETRY_DELAY_MS
                 timeoutNotified = false
             }
+            connectionGeneration++
             wantsConnection = true
             reconnect = !manual || status.isDisconnectedByRemote()
             send()
@@ -227,6 +271,7 @@ internal class LyriconSubscriberImpl(
         fun cancel() {
             wantsConnection = false
             timeoutNotified = false
+            connectionGeneration++
             cancelRetry()
             abortAttempt()
         }
@@ -266,9 +311,12 @@ internal class LyriconSubscriberImpl(
             cancelTimeout()
             timeoutJob = scope.launch {
                 delay(CONNECT_TIMEOUT_MS)
-                if (onTimeout()) {
-                    listeners.forEach {
-                        runCatching { it.onConnectTimeout(this@LyriconSubscriberImpl) }
+                val generation = onTimeout()
+                if (generation != null) {
+                    dispatchEvent(generation) {
+                        if (wantsConnection && !destroyed.get()) {
+                            it.onConnectTimeout(this@LyriconSubscriberImpl)
+                        }
                     }
                 }
             }
@@ -280,13 +328,13 @@ internal class LyriconSubscriberImpl(
          * 首次超时通知一次，后续重试只更新状态与退避。
          */
         @Synchronized
-        private fun onTimeout(): Boolean {
-            if (destroyed.get() || !status.isConnecting() || !wantsConnection) return false
+        private fun onTimeout(): Long? {
+            if (destroyed.get() || !status.isConnecting() || !wantsConnection) return null
             status = SubscriberStatus.DISCONNECTED
             scheduleRetry()
-            if (timeoutNotified) return false
+            if (timeoutNotified) return null
             timeoutNotified = true
-            return true
+            return connectionGeneration
         }
 
         @Synchronized

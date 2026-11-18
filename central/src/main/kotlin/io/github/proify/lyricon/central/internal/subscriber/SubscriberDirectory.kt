@@ -36,6 +36,7 @@ internal class SubscriberDirectory {
         }
         val candidate = SubscriberConnection(binder, info)
         val registered = registry.register(candidate)
+        if (registered !== candidate) candidate.close()
         return registered to (registered === candidate)
     }
 

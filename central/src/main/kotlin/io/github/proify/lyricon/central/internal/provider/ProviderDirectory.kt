@@ -43,6 +43,7 @@ internal class ProviderDirectory(
         }
         val candidate = ProviderConnection(binder, info, activePlayers)
         val registered = registry.register(candidate)
+        if (registered !== candidate) candidate.discard()
         return registered to (registered === candidate)
     }
 
