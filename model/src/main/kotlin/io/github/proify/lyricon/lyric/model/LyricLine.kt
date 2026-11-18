@@ -8,7 +8,7 @@ package io.github.proify.lyricon.lyric.model
 
 import io.github.proify.lyricon.lyric.model.extensions.deepCopy
 import io.github.proify.lyricon.lyric.model.extensions.normalize
-import io.github.proify.lyricon.lyric.model.extensions.rebuildTextOr
+import io.github.proify.lyricon.lyric.model.extensions.rebuildTextOrKeep
 import io.github.proify.lyricon.lyric.model.interfaces.DeepCopyable
 import io.github.proify.lyricon.lyric.model.interfaces.ILyricLine
 import io.github.proify.lyricon.lyric.model.interfaces.Normalize
@@ -46,7 +46,7 @@ data class LyricLine(
 ) : ILyricLine, DeepCopyable<LyricLine>, Normalize<LyricLine> {
 
     init {
-        duration = fallbackZeroDuration(begin, end, duration)
+        duration = fillZeroDuration(begin, end, duration)
     }
 
     /**
@@ -72,6 +72,6 @@ data class LyricLine(
      */
     override fun normalize(): LyricLine = deepCopy().apply {
         words = words?.normalize()
-        text = words.rebuildTextOr(text)
+        text = words.rebuildTextOrKeep(text)
     }
 }

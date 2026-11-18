@@ -50,7 +50,7 @@ internal class PlayerCommandStub(
     private val closed = AtomicBoolean(false)
     private val closeMutex = Mutex()
     private val positionTracker = PlaybackStateTracker()
-    private val positionMemory = PositionMemoryChannel(info)
+    private val positionMemory = PositionMemoryChannel()
     private val positionTicker = PositionTicker(
         scope = scope,
         readPosition = positionTracker::computePosition,
@@ -121,7 +121,7 @@ internal class PlayerCommandStub(
     override fun setPlaybackState(isPlaying: Boolean) {
         if (closed.get()) return
 
-        positionTracker.useManualMode()
+        positionTracker.useManualMode(isPlaying)
 
         if (session.isPlaying != isPlaying) {
             session.isPlaying = isPlaying
@@ -165,6 +165,7 @@ internal class PlayerCommandStub(
         if (closed.get()) return
 
         val safe = position.coerceAtLeast(0L)
+        positionTracker.seekTo(safe)
         session.position = safe
         playerEvents.safeNotify { onSeekTo(session, safe) }
     }

@@ -135,6 +135,153 @@ class PlaybackStateTrackerTest {
     // ---- 模式切换 ----
 
     @Test
+    fun manualSeekAdvancesWhilePlayingAndReleasesWhenReaderCatchesUp() {
+        val clock = FakeClock()
+        var reader = 5_000L
+        val tracker = tracker(clock, manual = { reader })
+
+        tracker.useManualMode(playing = true)
+        tracker.seekTo(30_000L)
+
+        assertEquals(30_000L, tracker.computePosition())
+        clock.now += 50L
+        assertEquals(30_050L, tracker.computePosition())
+
+        reader = 30_100L
+        assertEquals(30_100L, tracker.computePosition())
+    }
+
+    @Test
+    fun manualSeekSmallDeltaIsNotReleasedImmediately() {
+        val clock = FakeClock()
+        var reader = 30_500L
+        val tracker = tracker(clock, manual = { reader })
+        tracker.useManualMode(playing = true)
+
+        tracker.seekTo(30_000L)
+        assertEquals(30_000L, tracker.computePosition())
+
+        clock.now += 50L
+        assertEquals(30_050L, tracker.computePosition())
+
+        reader = 30_100L
+        assertEquals(30_100L, tracker.computePosition())
+    }
+
+    @Test
+    fun pausedSmallSeekIsNotReleasedImmediately() {
+        val clock = FakeClock()
+        var reader = 30_500L
+        val tracker = tracker(clock, manual = { reader })
+        tracker.useManualMode(playing = false)
+
+        tracker.seekTo(30_000L)
+        clock.now += 500L
+
+        assertEquals(30_000L, tracker.computePosition())
+    }
+
+    @Test
+    fun pausedSeekDoesNotExpire() {
+        val clock = FakeClock()
+        val tracker = tracker(clock, manual = { 30_500L })
+        tracker.useManualMode(playing = false)
+
+        tracker.seekTo(30_000L)
+        clock.now += 5_000L
+
+        assertEquals(30_000L, tracker.computePosition())
+    }
+
+    @Test
+    fun lowWriteRateDoesNotReleaseSeekEarly() {
+        val clock = FakeClock()
+        var reader = 30_500L
+        val tracker = tracker(clock, manual = { reader })
+        tracker.useManualMode(playing = true)
+
+        tracker.seekTo(30_000L)
+        clock.now += 1_000L
+
+        // reader 未更新时不能因 expected 追平旧值而释放
+        assertEquals(31_000L, tracker.computePosition())
+
+        reader = 31_000L
+        assertEquals(31_000L, tracker.computePosition())
+    }
+
+    @Test
+    fun pausedAfterSeekKeepsAdvancedPosition() {
+        val clock = FakeClock()
+        var reader = 5_000L
+        val tracker = tracker(clock, manual = { reader })
+        tracker.useManualMode(playing = true)
+        tracker.seekTo(30_000L)
+
+        clock.now += 5_000L
+        tracker.useManualMode(playing = false)
+
+        assertEquals(35_000L, tracker.computePosition())
+
+        tracker.useManualMode(playing = true)
+        clock.now += 1_000L
+        assertEquals(36_000L, tracker.computePosition())
+    }
+
+    @Test
+    fun pausedSeekFollowsProviderCorrection() {
+        val clock = FakeClock()
+        var reader = 30_500L
+        val tracker = tracker(clock, manual = { reader })
+        tracker.useManualMode(playing = false)
+        tracker.seekTo(30_000L)
+
+        reader = 29_800L
+        assertEquals(29_800L, tracker.computePosition())
+    }
+
+    @Test
+    fun manualSeekDoesNotAdvanceWhenPaused() {
+        val clock = FakeClock()
+        val tracker = tracker(clock, manual = { 5_000L })
+
+        tracker.useManualMode(playing = false)
+        tracker.seekTo(30_000L)
+        clock.now += 500L
+
+        assertEquals(30_000L, tracker.computePosition())
+    }
+
+    @Test
+    fun manualSeekTimesOutBackToReader() {
+        val clock = FakeClock()
+        val tracker = tracker(clock, manual = { 5_000L })
+
+        tracker.useManualMode(playing = true)
+        tracker.seekTo(30_000L)
+        clock.now += 2_001L
+
+        assertEquals(5_000L, tracker.computePosition())
+    }
+
+    @Test
+    fun drivingSeekUpdatesBasePosition() {
+        val clock = FakeClock()
+        val tracker = tracker(clock)
+        tracker.usePlaybackState(
+            playing = true,
+            position = 10_000L,
+            lastUpdateTime = clock.now,
+            playbackSpeed = 1.0f
+        )
+
+        tracker.seekTo(50_000L)
+        clock.now += 1_000L
+
+        assertEquals(51_000L, tracker.computePosition())
+    }
+
+    @Test
     fun manualModeSwitchReturnsToReader() {
         val clock = FakeClock()
         val tracker = tracker(clock, manual = { 8_888L })

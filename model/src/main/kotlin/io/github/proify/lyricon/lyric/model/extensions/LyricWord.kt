@@ -9,12 +9,12 @@ import io.github.proify.lyricon.lyric.model.LyricWord
 import io.github.proify.lyricon.lyric.model.resolveDuration
 
 /**
- * 孤立无效词的兜底结束时间（毫秒）。
+ * 占位词的兜底结束时间（毫秒）。
  *
  * 当整行单词的时间戳全部无效时会构造一个占位词，仅保证 `duration > 0`
  * 从而不被上层剔除，**不代表真实演唱时长**。
  */
-private const val ORPHAN_WORD_END_MS = 100L
+private const val PLACEHOLDER_WORD_END_MS = 100L
 
 /**
  * 规范化歌词单词列表。
@@ -110,14 +110,14 @@ fun List<LyricWord>.normalize(): List<LyricWord> {
             result.add(
                 LyricWord(
                     begin = 0,
-                    end = ORPHAN_WORD_END_MS,
+                    end = PLACEHOLDER_WORD_END_MS,
                     text = combinedText
                 )
             )
         }
     }
 
-    return result.sortedByBegin().mergeAsciiWordFragments()
+    return result.sortedByBegin().mergeAsciiFragments()
 }
 
 /**
@@ -126,7 +126,7 @@ fun List<LyricWord>.normalize(): List<LyricWord> {
  * 部分歌词源会把英文复合词拆成多个有时间戳的片段，例如 under + ground。
  * 这些片段之间没有独立空格词，因此规范化后应作为同一个词显示。
  */
-private fun List<LyricWord>.mergeAsciiWordFragments(): List<LyricWord> {
+private fun List<LyricWord>.mergeAsciiFragments(): List<LyricWord> {
     if (size < 2) return this
 
     val result = ArrayList<LyricWord>(size)
@@ -134,7 +134,7 @@ private fun List<LyricWord>.mergeAsciiWordFragments(): List<LyricWord> {
     for (word in this) {
         val previous = result.lastOrNull()
 
-        if (previous != null && previous.canMergeAsciiWordFragmentWith(word)) {
+        if (previous != null && previous.canMergeAsciiFragment(word)) {
             previous.text = previous.text.orEmpty() + word.text.orEmpty()
             previous.end = maxOf(previous.end, word.end)
             // 合并后跨度已变，按 begin/end 重新派生 duration，避免累加放大历史误差
@@ -147,7 +147,7 @@ private fun List<LyricWord>.mergeAsciiWordFragments(): List<LyricWord> {
     return result
 }
 
-private fun LyricWord.canMergeAsciiWordFragmentWith(next: LyricWord): Boolean =
+private fun LyricWord.canMergeAsciiFragment(next: LyricWord): Boolean =
     text.isAsciiWordFragment() && next.text.isAsciiWordFragment() && end == next.begin
 
 private fun String?.isAsciiWordFragment(): Boolean =

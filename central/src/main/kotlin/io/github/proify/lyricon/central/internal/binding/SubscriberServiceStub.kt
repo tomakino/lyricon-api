@@ -24,7 +24,7 @@ internal class SubscriberServiceStub(
 ) : IRemoteService.Stub() {
 
     private val closed = AtomicBoolean(false)
-    private val subscription = SubscriberSession(connection!!.subscriberInfo)
+    private val subscription = SubscriberSession()
 
     override fun setActivePlayerListener(listener: IActivePlayerListener?) {
         if (closed.get()) return

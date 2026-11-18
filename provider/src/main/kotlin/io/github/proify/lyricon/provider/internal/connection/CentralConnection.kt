@@ -20,6 +20,7 @@ import io.github.proify.lyricon.provider.RemotePlayer
 import io.github.proify.lyricon.provider.internal.player.AidlRemotePlayer
 import io.github.proify.lyricon.provider.internal.player.ResyncingPlayer
 import io.github.proify.lyricon.provider.isConnected
+import io.github.proify.lyricon.provider.isDisconnected
 import io.github.proify.lyricon.provider.service.RemoteService
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -81,6 +82,7 @@ internal class CentralConnection(
      * 发送注册广播，避免破坏现有连接。
      */
     fun beginRegistration(): Boolean {
+        if (!machine.status.isDisconnected()) return false
         return transition(ConnectionTrigger.REGISTER).status == ConnectionStatus.CONNECTING
     }
 
@@ -202,12 +204,14 @@ internal class CentralConnection(
 
         callbackScope.launch {
             listeners.forEach { listener ->
-                when (notice) {
-                    ConnectionNotice.CONNECTED -> listener.onConnected(provider)
-                    ConnectionNotice.RECONNECTED -> listener.onReconnected(provider)
-                    ConnectionNotice.DISCONNECTED -> listener.onDisconnected(provider)
-                    ConnectionNotice.CONNECT_TIMEOUT -> listener.onConnectTimeout(provider)
-                }
+                runCatching {
+                    when (notice) {
+                        ConnectionNotice.CONNECTED -> listener.onConnected(provider)
+                        ConnectionNotice.RECONNECTED -> listener.onReconnected(provider)
+                        ConnectionNotice.DISCONNECTED -> listener.onDisconnected(provider)
+                        ConnectionNotice.CONNECT_TIMEOUT -> listener.onConnectTimeout(provider)
+                    }
+                }.onFailure { Log.e(TAG, "Connection notice dispatch failed", it) }
             }
         }
     }

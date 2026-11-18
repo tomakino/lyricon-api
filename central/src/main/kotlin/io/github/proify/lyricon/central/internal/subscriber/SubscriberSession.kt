@@ -14,7 +14,6 @@ import io.github.proify.lyricon.central.provider.player.ActivePlayerListener
 import io.github.proify.lyricon.lyric.model.Song
 import io.github.proify.lyricon.provider.ProviderInfo
 import io.github.proify.lyricon.subscriber.IActivePlayerListener
-import io.github.proify.lyricon.subscriber.SubscriberInfo
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.encodeToStream
 import java.io.ByteArrayOutputStream
@@ -25,13 +24,9 @@ import java.nio.ByteBuffer
  *
  * 作为 [ActivePlayerListener] 注册到活跃播放器中枢，把状态事件转换为
  * 订阅端 AIDL 回调；位置经共享内存写入，歌曲/提供端信息序列化后传输。
- *
- * @property subscriberInfo 订阅端身份，用于共享内存命名。
  */
 @OptIn(ExperimentalSerializationApi::class)
-internal class SubscriberSession(
-    subscriberInfo: SubscriberInfo
-) : ActivePlayerListener {
+internal class SubscriberSession : ActivePlayerListener {
 
     /** 订阅端的活跃播放器监听器。 */
     @Volatile
@@ -45,7 +40,7 @@ internal class SubscriberSession(
     private var positionBuffer: ByteBuffer? = null
 
     init {
-        initializePositionMemory(subscriberInfo)
+        initializePositionMemory()
     }
 
     override fun onActiveProviderChanged(providerInfo: ProviderInfo?) {
@@ -100,14 +95,12 @@ internal class SubscriberSession(
         remoteListener = null
     }
 
-    /** 按订阅端身份创建位置共享内存并映射。 */
-    private fun initializePositionMemory(info: SubscriberInfo) {
+    /** 创建位置共享内存并映射。 */
+    private fun initializePositionMemory() {
         try {
-            val hashHex = Integer.toHexString(
-                "${info.packageName}/${info.processName}".hashCode()
-            )
+            val name = "lyricon_subscriber_pos_${java.util.UUID.randomUUID()}"
             positionMemory =
-                SharedMemory.create("lyricon_subscriber_pos_$hashHex", Long.SIZE_BYTES).apply {
+                SharedMemory.create(name, Long.SIZE_BYTES).apply {
                     setProtect(OsConstants.PROT_READ or OsConstants.PROT_WRITE)
                     positionBuffer = mapReadWrite()
                 }

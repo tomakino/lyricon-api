@@ -10,6 +10,7 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.util.Log
+import java.util.concurrent.Executors
 
 /**
  * 注册广播接收器：把注册请求交给 [CentralRuntime.registration] 处理。
@@ -18,10 +19,24 @@ internal object CentralReceiver : BroadcastReceiver() {
 
     private const val TAG = "CentralReceiver"
 
+    /** 注册广播串行处理，避免并发进入连接注册表。 */
+    private val executor = Executors.newSingleThreadExecutor { runnable ->
+        Thread(runnable, "lyricon-registration")
+    }
+
     override fun onReceive(context: Context?, intent: Intent?) {
         val action = intent?.action ?: return
         Log.d(TAG, "Received intent: $action")
 
-        CentralRuntime.registration.handle(intent)
+        val pending = goAsync()
+        executor.execute {
+            try {
+                CentralRuntime.registration.handle(intent)
+            } catch (t: Throwable) {
+                Log.e(TAG, "Registration handling failed", t)
+            } finally {
+                pending.finish()
+            }
+        }
     }
 }

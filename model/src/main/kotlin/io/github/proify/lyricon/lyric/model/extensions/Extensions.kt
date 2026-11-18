@@ -72,5 +72,5 @@ fun <T : Normalize<T>> List<T>.normalize(): List<T> = map { it.normalize() }
  * @param default 逐词数据缺失时保留的原文本
  * @return 重建后的文本，或 [default]
  */
-internal fun List<LyricWord>?.rebuildTextOr(default: String?): String? =
+internal fun List<LyricWord>?.rebuildTextOrKeep(default: String?): String? =
     if (isNullOrEmpty()) default else joinToString("") { it.text.orEmpty() }

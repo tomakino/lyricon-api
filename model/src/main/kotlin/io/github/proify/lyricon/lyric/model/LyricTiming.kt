@@ -43,7 +43,7 @@ data class LyricTiming(
  * @param duration 调用方提供的持续时间（毫秒）
  * @return 兜底后的持续时间（毫秒）
  */
-internal fun fallbackZeroDuration(begin: Long, end: Long, duration: Long): Long =
+internal fun fillZeroDuration(begin: Long, end: Long, duration: Long): Long =
     if (duration == 0L && end > begin) end - begin else duration
 
 /**

@@ -175,7 +175,7 @@ class TimingNavigator<T : ILyricTiming>(
      * @return 最后一条 `begin <= position` 的记录；无匹配时返回 `null`
      */
     fun findPreviousEntry(position: Long): T? {
-        val idx = findUpperBound(position)
+        val idx = upperBound(position)
         return if (idx >= 0) source[idx] else null
     }
 
@@ -208,7 +208,7 @@ class TimingNavigator<T : ILyricTiming>(
             // 大幅前跳(随机跳转/拖动): 直接二分, 避免无谓的步进探测
             if (position - lastQueryPosition > 4096L) {
                 sequentialMode = false
-                return findUpperBound(position)
+                return upperBound(position)
             }
 
             var currIdx = lastIdx
@@ -219,7 +219,7 @@ class TimingNavigator<T : ILyricTiming>(
                 steps++
                 if (steps > 4) {
                     sequentialMode = false
-                    return findUpperBound(position)
+                    return upperBound(position)
                 }
             }
             sequentialMode = true
@@ -227,13 +227,13 @@ class TimingNavigator<T : ILyricTiming>(
         }
 
         sequentialMode = false
-        return findUpperBound(position)
+        return upperBound(position)
     }
 
     /**
      * 标准二分查找，定位第一个起始时间大于 [position] 的索引的前一个位置。
      */
-    private fun findUpperBound(position: Long): Int {
+    private fun upperBound(position: Long): Int {
         var low = 0
         var high = size - 1
         var ans = -1
@@ -301,31 +301,31 @@ class TimingNavigator<T : ILyricTiming>(
             var probe = 0
             while (s < anchorIndex && maxEndSoFar[s] < position) {
                 s++
-                if (++probe > 16) return gallopStart(position, anchorIndex)
+                if (++probe > 16) return gallopToStart(position, anchorIndex)
             }
             lastStartIndex = s
             lastStartQueryPosition = position
             return s
         }
-        return gallopStart(position, anchorIndex)
+        return gallopToStart(position, anchorIndex)
     }
 
     /** 指数探测: 1, 2, 4, 8... 向左试探, 常见窗口(K≤10) 1~3 次读数即定位, 仅极端窗口才退化到区间二分 */
-    private fun gallopStart(position: Long, anchorIndex: Int): Int {
+    private fun gallopToStart(position: Long, anchorIndex: Int): Int {
         var head = anchorIndex
         var step = 1
         while (head - step > 0 && maxEndSoFar[head - step] >= position) {
             head -= step
             step = step shl 1
         }
-        val start = lowerBoundStart((head - step).coerceAtLeast(0), head, position)
+        val start = binarySearchStart((head - step).coerceAtLeast(0), head, position)
         lastStartIndex = start
         lastStartQueryPosition = position
         return start
     }
 
     /** 在 [low, high] 内找第一个满足 maxEndSoFar[i] >= position 的索引(已知 high 满足) */
-    private fun lowerBoundStart(low: Int, high: Int, position: Long): Int {
+    private fun binarySearchStart(low: Int, high: Int, position: Long): Int {
         var lo = low
         var hi = high
         var ans = high

@@ -9,19 +9,14 @@ package io.github.proify.lyricon.central.internal.player
 import android.os.SharedMemory
 import android.system.OsConstants
 import android.util.Log
-import io.github.proify.lyricon.provider.ProviderInfo
 import java.nio.ByteBuffer
 
 /**
- * 提供端位置共享内存通道：创建以提供端身份命名的共享内存并映射只读缓冲。
+ * 位置共享内存通道：创建共享内存并映射只读缓冲。
  *
  * 提供端通过 AIDL 取得同一内存对象高频写入位置，中央侧低频读取。
- *
- * @property providerInfo 提供端身份，用于共享内存命名。
  */
-internal class PositionMemoryChannel(
-    private val providerInfo: ProviderInfo
-) {
+internal class PositionMemoryChannel {
 
     private var readBuffer: ByteBuffer? = null
 
@@ -48,13 +43,11 @@ internal class PositionMemoryChannel(
         sharedMemory = null
     }
 
-    /** 按提供端身份创建共享内存。 */
+    /** 创建共享内存并映射只读缓冲。 */
     private fun initialize() {
         try {
-            val hashHex = Integer.toHexString(
-                "${providerInfo.providerPackageName}/${providerInfo.playerPackageName}/${providerInfo.processName}".hashCode()
-            )
-            sharedMemory = SharedMemory.create("lyricon_pos_$hashHex", Long.SIZE_BYTES).apply {
+            val name = "lyricon_pos_${java.util.UUID.randomUUID()}"
+            sharedMemory = SharedMemory.create(name, Long.SIZE_BYTES).apply {
                 setProtect(OsConstants.PROT_READ or OsConstants.PROT_WRITE)
                 readBuffer = mapReadOnly()
             }

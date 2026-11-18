@@ -49,9 +49,11 @@ internal class RegistrationCoordinator(
 ) : CentralBootReceiver.BootListener {
 
     /** 当前注册尝试的超时协程。 */
+    @Volatile
     private var timeoutJob: Job? = null
 
     /** 失败重试协程。 */
+    @Volatile
     private var retryJob: Job? = null
 
     /** 期望保持连接（register 时置位，unregister/destroy 时复位）。 */
@@ -65,26 +67,38 @@ internal class RegistrationCoordinator(
     /** 当前注册尝试的回调：成功后停止重试，失败后安排下一次重试。 */
     private val attempt = object : RegistrationBinder.RegistrationAttempt {
         override fun onCompleted(connected: Boolean) {
-            cancelTimeout()
-            if (connected) {
-                cancelRetry()
-            } else {
-                scheduleRetry()
-            }
-            registrationBinder.endAttempt(this)
+            onAttemptCompleted(connected)
         }
+    }
+
+    @Synchronized
+    private fun onAttemptCompleted(connected: Boolean) {
+        cancelTimeout()
+        if (connected) {
+            cancelRetry()
+        } else {
+            scheduleRetry()
+        }
+        registrationBinder.endAttempt(attempt)
     }
 
     init {
         CentralBootReceiver.addBootListener(this)
     }
 
-    /** 发出注册广播；返回是否真正启动了一次注册。 */
-    fun start(): Boolean {
+    /**
+     * 发出注册广播；返回是否真正启动了一次注册。
+     *
+     * @param manual 是否为用户主动触发；仅主动触发会重置指数退避
+     */
+    @Synchronized
+    fun start(manual: Boolean = true): Boolean {
         if (centralPackageName.isBlank()) return false
-        // 用户/外部主动触发：取消待定重试，退避回到起点。
-        cancelRetry()
-        retryDelayMs = INITIAL_RETRY_DELAY_MS
+        if (!manual && !wantsConnection) return false
+        if (manual) {
+            cancelRetry()
+            retryDelayMs = INITIAL_RETRY_DELAY_MS
+        }
         // 状态机权威判定：连接中或已连接时不重复注册，避免破坏现有连接。
         if (!connection.beginRegistration()) return false
 
@@ -106,11 +120,12 @@ internal class RegistrationCoordinator(
     override fun onBootCompleted() {
         // 中心服务重启：只要提供端仍期望连接且当前未在连接中，就补一次注册。
         if (wantsConnection && connection.connectionStatus.isDisconnected()) {
-            start()
+            start(manual = false)
         }
     }
 
     /** 取消当前注册尝试：清空超时与重试、复位期望连接标记，并让迟到回调失效。 */
+    @Synchronized
     fun cancel() {
         wantsConnection = false
         cancelTimeout()
@@ -137,6 +152,7 @@ internal class RegistrationCoordinator(
     }
 
     /** 启动注册超时等待；超时后结束尝试并按退避安排重试。 */
+    @Synchronized
     private fun scheduleTimeout() {
         cancelTimeout()
         timeoutJob = scope.launch {
@@ -148,13 +164,15 @@ internal class RegistrationCoordinator(
     }
 
     /** 注册失败/超时后按指数退避安排一次重试（仅当仍期望连接时）。 */
+    @Synchronized
     private fun scheduleRetry() {
         if (!wantsConnection) return
         cancelRetry()
         retryJob = scope.launch {
             delay(retryDelayMs)
+            if (!wantsConnection) return@launch
             retryDelayMs = (retryDelayMs * 2).coerceAtMost(MAX_RETRY_DELAY_MS)
-            start()
+            start(manual = false)
         }
     }
 

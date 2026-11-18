@@ -8,6 +8,7 @@ package io.github.proify.lyricon.provider.internal
 
 import android.content.Context
 import android.os.Build
+import android.util.Log
 import androidx.annotation.RequiresApi
 import io.github.proify.lyricon.provider.ConnectionListener
 import io.github.proify.lyricon.provider.LyriconProvider
@@ -84,7 +85,7 @@ internal class LyriconProviderImpl(
 
     override fun register(): Boolean {
         if (destroyed.get()) return false
-        return registration.start()
+        return registration.start(manual = true)
     }
 
     override fun unregister(): Boolean {
@@ -104,11 +105,16 @@ internal class LyriconProviderImpl(
     }
 
     override fun onConnected(provider: LyriconProvider) {
-        if (autoSync) connection.syncPlayer()
+        if (autoSync) syncPlayerSafely()
     }
 
     override fun onReconnected(provider: LyriconProvider) {
-        if (autoSync) connection.syncPlayer()
+        if (autoSync) syncPlayerSafely()
+    }
+
+    private fun syncPlayerSafely() {
+        runCatching { connection.syncPlayer() }
+            .onFailure { Log.e("LyriconProviderImpl", "Failed to sync player state", it) }
     }
 
     override fun onDisconnected(provider: LyriconProvider) = Unit

@@ -37,22 +37,55 @@ internal class PlaybackStateTracker(
     @Volatile
     private var speed: Float = 1.0f
 
+    /** 手动模式 seek 后的临时覆盖值，避免共享内存旧值造成回跳。 */
+    @Volatile
+    private var manualSeek: ManualSeek? = null
+
+    private data class ManualSeek(
+        val position: Long,
+        val startAt: Long,
+        val until: Long,
+        val sharedAtSeek: Long,
+    )
+
     /** 手动模式的读取源（位置共享内存）。 */
     @Volatile
     var manualPositionReader: (() -> Long)? = null
 
     /** 切换到手动上报模式（setPlaybackState(Boolean) 路径）。 */
-    fun useManualMode() {
+    @Synchronized
+    fun useManualMode(playing: Boolean = false) {
+        if (isStateDriven) {
+            manualSeek = null
+        } else {
+            val seek = manualSeek
+            if (seek != null && playing != isPlaying) {
+                val now = clock()
+                val current = if (isPlaying) {
+                    seek.position + (now - seek.startAt).coerceAtLeast(0L)
+                } else {
+                    seek.position
+                }
+                manualSeek = seek.copy(
+                    position = current,
+                    startAt = now,
+                    until = if (playing) now + MANUAL_SEEK_TIMEOUT_MS else Long.MAX_VALUE,
+                )
+            }
+        }
         isStateDriven = false
+        isPlaying = playing
     }
 
     /** 切换到 PlaybackState 驱动模式（setPlaybackState2 路径）。 */
+    @Synchronized
     fun usePlaybackState(
         playing: Boolean,
         position: Long,
         lastUpdateTime: Long,
         playbackSpeed: Float,
     ) {
+        manualSeek = null
         isStateDriven = true
         isPlaying = playing
         basePosition = position
@@ -65,8 +98,10 @@ internal class PlaybackStateTracker(
      *
      * @return 是否正处于驱动模式（调用方据此决定是否关闭位置更新）。
      */
+    @Synchronized
     fun stopDriving(): Boolean {
         val wasDriving = isStateDriven
+        manualSeek = null
         isStateDriven = false
         isPlaying = false
         basePosition = 0L
@@ -75,9 +110,43 @@ internal class PlaybackStateTracker(
         return wasDriving
     }
 
+    /** 将播放位置重置到 [position]，同时更新驱动模式的基数与时间。 */
+    @Synchronized
+    fun seekTo(position: Long) {
+        val safe = position.coerceAtLeast(0L)
+        val now = clock()
+        basePosition = safe
+        lastUpdate = now
+        if (!isStateDriven) {
+            val shared = (manualPositionReader?.invoke() ?: 0L).coerceAtLeast(0L)
+            manualSeek = ManualSeek(
+                position = safe,
+                startAt = now,
+                until = if (isPlaying) now + MANUAL_SEEK_TIMEOUT_MS else Long.MAX_VALUE,
+                sharedAtSeek = shared,
+            )
+        }
+    }
+
     /** 当前播放位置（毫秒），非负。 */
     fun computePosition(): Long {
         if (!isStateDriven) {
+            val seek = manualSeek
+            if (seek != null) {
+                val now = clock()
+                val shared = (manualPositionReader?.invoke() ?: 0L).coerceAtLeast(0L)
+                val expected = if (isPlaying) seek.position + (now - seek.startAt) else seek.position
+                val readerUpdated = kotlin.math.abs(shared - seek.sharedAtSeek) > 1L
+                val caughtUp = readerUpdated && (
+                    !isPlaying ||
+                        kotlin.math.abs(shared - expected) <= SEEK_MATCH_TOLERANCE_MS
+                    )
+                if (caughtUp || now >= seek.until) {
+                    if (manualSeek === seek) manualSeek = null
+                    return shared
+                }
+                return expected.coerceAtLeast(0L)
+            }
             return (manualPositionReader?.invoke() ?: 0L).coerceAtLeast(0L)
         }
 
@@ -91,5 +160,10 @@ internal class PlaybackStateTracker(
             safeBase + (delta * speed).toLong()
         }
         return advanced.coerceAtLeast(0L)
+    }
+
+    private companion object {
+        private const val MANUAL_SEEK_TIMEOUT_MS = 2_000L
+        private const val SEEK_MATCH_TOLERANCE_MS = 150L
     }
 }
