@@ -10,51 +10,68 @@ import io.github.proify.lyricon.lyric.model.Song
 import io.github.proify.lyricon.provider.ProviderInfo
 
 /**
- * 单个提供端的播放会话状态（可变）。
+ * 单个提供端的播放会话。
  *
- * 由 [io.github.proify.lyricon.central.internal.binding.RemotePlayerStub] 随命令更新；[ActivePlayerHub] 依据其状态事件
- * 决定活跃播放器。内容字段（歌曲/文本）互斥，由 [lyricType] 标记。
+ * 状态以不可变 [State] 快照整体发布；读取方通过 [state] 一次取得一致快照。
+ * 会话对象身份稳定，可安全用于活跃播放器选择。
  *
  * @property providerInfo 所属提供端信息，用于身份比较与报告。
  */
-internal data class PlayerSession(val providerInfo: ProviderInfo) {
+internal class PlayerSession(val providerInfo: ProviderInfo) {
 
-    /** 最近设置的歌曲；设置时 [lyricType] 切换为 SONG。 */
-    @Volatile
-    var song: Song? = null
-        set(value) {
-            field = value
-            lyricType = LyricType.SONG
-        }
+    /** 一次完整的状态快照。 */
+    internal data class State(
+        val song: Song? = null,
+        val text: String? = null,
+        val lyricType: LyricType = LyricType.NONE,
+        val isPlaying: Boolean = false,
+        val position: Long = -1,
+        val isDisplayTranslation: Boolean = false,
+        val isDisplayRoma: Boolean = false,
+    )
 
-    /** 当前是否播放中。 */
+    /** 当前状态；每次更新整体替换。 */
     @Volatile
-    var isPlaying: Boolean = false
-
-    /** 最近已知的播放位置（毫秒），-1 表示未同步。 */
-    @Volatile
-    var position: Long = -1
-
-    /** 最近推送的纯文本；设置时 [lyricType] 切换为 TEXT。 */
-    @Volatile
-    var text: String? = null
-        set(value) {
-            field = value
-            lyricType = LyricType.TEXT
-        }
-
-    /** 是否建议显示翻译。 */
-    @Volatile
-    var isDisplayTranslation: Boolean = false
-
-    /** 是否建议显示罗马音。 */
-    @Volatile
-    var isDisplayRoma = false
-
-    /** 当前歌词内容类型。 */
-    @Volatile
-    var lyricType: LyricType = LyricType.NONE
+    internal var state: State = State()
         private set
+
+    val song: Song? get() = state.song
+    val text: String? get() = state.text
+    val lyricType: LyricType get() = state.lyricType
+    val isPlaying: Boolean get() = state.isPlaying
+    val position: Long get() = state.position
+    val isDisplayTranslation: Boolean get() = state.isDisplayTranslation
+    val isDisplayRoma: Boolean get() = state.isDisplayRoma
+
+    @Synchronized
+    fun setSong(song: Song?) {
+        state = state.copy(song = song, lyricType = LyricType.SONG)
+    }
+
+    @Synchronized
+    fun setText(text: String?) {
+        state = state.copy(text = text, lyricType = LyricType.TEXT)
+    }
+
+    @Synchronized
+    fun setPlaying(isPlaying: Boolean) {
+        state = state.copy(isPlaying = isPlaying)
+    }
+
+    @Synchronized
+    fun setPosition(position: Long) {
+        state = state.copy(position = position)
+    }
+
+    @Synchronized
+    fun setDisplayTranslation(value: Boolean) {
+        state = state.copy(isDisplayTranslation = value)
+    }
+
+    @Synchronized
+    fun setDisplayRoma(value: Boolean) {
+        state = state.copy(isDisplayRoma = value)
+    }
 
     /** 歌词内容类型。 */
     enum class LyricType {

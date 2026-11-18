@@ -17,7 +17,7 @@ import org.junit.Test
 class ActivePlayerSelectorTest {
 
     private fun session(id: String, playing: Boolean) =
-        PlayerSession(ProviderInfo("pkg-" + id, "player-" + id)).apply { isPlaying = playing }
+        PlayerSession(ProviderInfo("pkg-" + id, "player-" + id)).apply { setPlaying(playing) }
 
     // ---- 先到先得 ----
 
@@ -42,7 +42,7 @@ class ActivePlayerSelectorTest {
         val s1 = session("a", playing = true)
         selector.decide(s1)
 
-        s1.isPlaying = false
+        s1.setPlaying(false)
         val decision = selector.decide(s1)
 
         assertEquals(ActivePlayerDecision.Keep, decision)

@@ -127,7 +127,7 @@ internal class RemotePlayerStub(
         positionTracker.useManualMode(isPlaying)
 
         if (session.isPlaying != isPlaying) {
-            session.isPlaying = isPlaying
+            session.setPlaying(isPlaying)
             playerEvents.safeNotify { onPlaybackStateChanged(session, isPlaying) }
         }
 
@@ -157,7 +157,7 @@ internal class RemotePlayerStub(
         )
 
         if (session.isPlaying != isPlaying) {
-            session.isPlaying = isPlaying
+            session.setPlaying(isPlaying)
             playerEvents.safeNotify { onPlaybackStateChanged(session, isPlaying) }
         }
 
@@ -169,7 +169,7 @@ internal class RemotePlayerStub(
 
         val safe = position.coerceAtLeast(0L)
         positionTracker.seekTo(safe)
-        session.position = safe
+        session.setPosition(safe)
         playerEvents.safeNotify { onSeekTo(session, safe) }
     }
 
@@ -182,14 +182,14 @@ internal class RemotePlayerStub(
     override fun setDisplayTranslation(isDisplayTranslation: Boolean) {
         if (closed.get()) return
 
-        session.isDisplayTranslation = isDisplayTranslation
+        session.setDisplayTranslation(isDisplayTranslation)
         playerEvents.safeNotify { onDisplayTranslationChanged(session, isDisplayTranslation) }
     }
 
     override fun setDisplayRoma(isDisplayRoma: Boolean) {
         if (closed.get()) return
 
-        session.isDisplayRoma = isDisplayRoma
+        session.setDisplayRoma(isDisplayRoma)
         playerEvents.safeNotify { onDisplayRomaChanged(session, isDisplayRoma) }
     }
 
@@ -213,17 +213,31 @@ internal class RemotePlayerStub(
         val normalized = runCatching { song?.normalize() }
             .onFailure { Log.e(TAG, "Failed to normalize song", it) }
             .getOrNull()
-        session.song = normalized
+        session.setSong(normalized)
         playerEvents.safeNotify { onSongChanged(session, normalized) }
     }
 
     private sealed interface LyricPayload {
-        data class SongPayload(val bytes: ByteArray?) : LyricPayload
+        data class SongPayload(val bytes: ByteArray?) : LyricPayload {
+            override fun equals(other: Any?): Boolean {
+                if (this === other) return true
+                if (javaClass != other?.javaClass) return false
+
+                other as SongPayload
+
+                return bytes.contentEquals(other.bytes)
+            }
+
+            override fun hashCode(): Int {
+                return bytes?.contentHashCode() ?: 0
+            }
+        }
+
         data class TextPayload(val text: String?) : LyricPayload
     }
 
     private fun processText(text: String?) {
-        session.text = text
+        session.setText(text)
         playerEvents.safeNotify { onText(session, text) }
     }
 
@@ -240,7 +254,7 @@ internal class RemotePlayerStub(
 
     /** 轮询回调：写入会话并广播位置变化。 */
     private fun publishPosition(position: Long) {
-        session.position = position
+        session.setPosition(position)
         playerEvents.safeNotify { onPositionChanged(session, position) }
     }
 

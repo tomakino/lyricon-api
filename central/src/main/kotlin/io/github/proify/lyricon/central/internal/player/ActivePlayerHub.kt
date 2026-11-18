@@ -53,7 +53,7 @@ internal class ActivePlayerHub : PlayerListener {
     /** 向指定监听器同步当前活跃状态快照（若无活跃播放器则跳过）。 */
     fun syncLatestState(listener: ActivePlayerListener) {
         val snapshot = lock.read {
-            selector.activeSession?.snapshot(selector.activeIsPlaying)
+            selector.activeSession?.snapshot()
         } ?: return
 
         dispatchSnapshot(snapshot, listener)
@@ -127,7 +127,7 @@ internal class ActivePlayerHub : PlayerListener {
     /** 切换后向监听器全量同步新活跃者的状态。 */
     private fun syncNewProviderState(session: PlayerSession, listener: ActivePlayerListener) {
         val snapshot = lock.read {
-            session.snapshot(selector.activeIsPlaying)
+            session.snapshot()
         }
         dispatchSnapshot(snapshot, listener)
     }
@@ -185,17 +185,20 @@ internal class ActivePlayerHub : PlayerListener {
         }
     }
 
-    /** 生成该会话在 [isPlaying] 下的完整报告。 */
-    private fun PlayerSession.snapshot(isPlaying: Boolean) = ActivePlayerSnapshot(
-        providerInfo = providerInfo,
-        isPlaying = isPlaying,
-        song = song,
-        text = text,
-        lyricType = lyricType,
-        isDisplayTranslation = isDisplayTranslation,
-        isDisplayRoma = isDisplayRoma,
-        position = position
-    )
+    /** 生成该会话的完整报告。 */
+    private fun PlayerSession.snapshot(): ActivePlayerSnapshot {
+        val current = state
+        return ActivePlayerSnapshot(
+            providerInfo = providerInfo,
+            isPlaying = current.isPlaying,
+            song = current.song,
+            text = current.text,
+            lyricType = current.lyricType,
+            isDisplayTranslation = current.isDisplayTranslation,
+            isDisplayRoma = current.isDisplayRoma,
+            position = current.position,
+        )
+    }
 
     private companion object {
         private const val TAG = "ActivePlayerHub"
