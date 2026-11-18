@@ -1,0 +1,36 @@
+[versions]
+agp = "9.4.0"
+coreKtx = "1.19.1"
+junit = "4.13.2"
+junitVersion = "1.3.0"
+espressoCore = "3.7.0"
+appcompat = "1.8.0"
+material = "1.14.0"
+kotlin = "2.4.21"
+kotlinxSerializationJson = "1.13.0"
+jetbrainsKotlinJvm = "2.4.21"
+yukihook-bom = "1.5.0"
+ksp = "2.3.6"
+
+[libraries]
+androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
+junit = { group = "junit", name = "junit", version.ref = "junit" }
+androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
+androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }
+androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
+material = { group = "com.google.android.material", name = "material", version.ref = "material" }
+androidx-appcompat-resources = { module = "androidx.appcompat:appcompat-resources", version.ref = "appcompat" }
+kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinxSerializationJson" }
+
+yukihook-bom = { module = "com.highcapable.yukihookapi:yukihook-bom", version.ref = "yukihook-bom" }
+yukihook-core = { module = "com.highcapable.yukihookapi:yukihook-core" }
+yukihook-compiler = { module = "com.highcapable.yukihookapi:yukihook-compiler" }
+yukihook-extension-kavaref = { module = "com.highcapable.yukihookapi:yukihook-extension-kavaref" }
+yukihook-runtime-libxposed = { module = "com.highcapable.yukihookapi:yukihook-runtime-libxposed" }
+
+[plugins]
+android-application = { id = "com.android.application", version.ref = "agp" }
+android-library = { id = "com.android.library", version.ref = "agp" }
+ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
+kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
+jetbrains-kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "jetbrainsKotlinJvm" }
