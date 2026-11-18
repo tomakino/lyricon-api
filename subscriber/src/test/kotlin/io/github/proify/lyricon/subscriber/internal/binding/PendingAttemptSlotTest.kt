@@ -10,11 +10,11 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Test
 
-class RegistrationAttemptsTest {
+class PendingAttemptSlotTest {
 
     @Test
     fun consumeReturnsAndClearsAttempt() {
-        val attempts = RegistrationAttempts<String>()
+        val attempts = PendingAttemptSlot<String>()
         attempts.begin("a")
 
         assertEquals("a", attempts.consume())
@@ -23,13 +23,13 @@ class RegistrationAttemptsTest {
 
     @Test
     fun consumeWithNoPendingAttemptReturnsNull() {
-        val attempts = RegistrationAttempts<String>()
+        val attempts = PendingAttemptSlot<String>()
         assertNull(attempts.consume())
     }
 
     @Test
     fun endClearsOnlyMatchingAttempt() {
-        val attempts = RegistrationAttempts<String>()
+        val attempts = PendingAttemptSlot<String>()
         attempts.begin("a")
 
         attempts.end("b")
@@ -42,7 +42,7 @@ class RegistrationAttemptsTest {
 
     @Test
     fun beginReplacesPendingAttempt() {
-        val attempts = RegistrationAttempts<String>()
+        val attempts = PendingAttemptSlot<String>()
         attempts.begin("a")
         attempts.begin("b")
 
@@ -51,7 +51,7 @@ class RegistrationAttemptsTest {
 
     @Test
     fun endAfterAttemptWasConsumedIsNoOp() {
-        val attempts = RegistrationAttempts<String>()
+        val attempts = PendingAttemptSlot<String>()
         attempts.begin("a")
         assertEquals("a", attempts.consume())
 

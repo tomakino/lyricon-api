@@ -6,7 +6,7 @@
 
 package io.github.proify.lyricon.central.provider.player
 
-import io.github.proify.lyricon.central.CentralRuntime
+import io.github.proify.lyricon.central.CentralRegistry
 
 /**
  * 活跃播放器状态的监听入口。
@@ -26,7 +26,7 @@ object ActivePlayerCenter {
      * @param listener 状态监听器。
      */
     fun addListener(listener: ActivePlayerListener) {
-        CentralRuntime.activePlayers.addListener(listener)
+        CentralRegistry.activePlayers.addListener(listener)
     }
 
     /**
@@ -35,6 +35,6 @@ object ActivePlayerCenter {
      * @param listener 之前注册的监听器。
      */
     fun removeListener(listener: ActivePlayerListener) {
-        CentralRuntime.activePlayers.removeListener(listener)
+        CentralRegistry.activePlayers.removeListener(listener)
     }
 }

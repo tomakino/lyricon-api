@@ -14,7 +14,7 @@ import io.github.proify.lyricon.central.internal.subscriber.SubscriberDirectory
 /**
  * 中央运行时：全局单例的注册表与分发器集合。
  */
-internal object CentralRuntime {
+internal object CentralRegistry {
     val activePlayers = ActivePlayerHub()
     val providers = ProviderDirectory(activePlayers)
     val subscribers = SubscriberDirectory()

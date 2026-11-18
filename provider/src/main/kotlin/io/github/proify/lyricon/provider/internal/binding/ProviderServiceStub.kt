@@ -16,7 +16,7 @@ import io.github.proify.lyricon.provider.ProviderService
  *
  * @property handler 当前命令处理回调；可通过 LyriconProvider.providerService 更新。
  */
-internal class ProviderCommandStub(
+internal class ProviderServiceStub(
     /** 当前命令处理回调，可为 null（此时命令返回空结果）。 */
     var handler: ProviderService? = null
 ) :

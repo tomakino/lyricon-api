@@ -12,7 +12,7 @@ import io.github.proify.lyricon.provider.ProviderInfo
 /**
  * 单个提供端的播放会话状态（可变）。
  *
- * 由 [PlayerCommandStub] 随命令更新；[ActivePlayerHub] 依据其状态事件
+ * 由 [io.github.proify.lyricon.central.internal.binding.RemotePlayerStub] 随命令更新；[ActivePlayerHub] 依据其状态事件
  * 决定活跃播放器。内容字段（歌曲/文本）互斥，由 [lyricType] 标记。
  *
  * @property providerInfo 所属提供端信息，用于身份比较与报告。

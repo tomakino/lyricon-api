@@ -8,10 +8,10 @@ package io.github.proify.lyricon.provider.internal.connection
 
 import io.github.proify.lyricon.provider.ConnectionStatus
 import io.github.proify.lyricon.provider.isConnected
-import io.github.proify.lyricon.provider.internal.connection.ConnectionNotice.CONNECTED
-import io.github.proify.lyricon.provider.internal.connection.ConnectionNotice.CONNECT_TIMEOUT
-import io.github.proify.lyricon.provider.internal.connection.ConnectionNotice.DISCONNECTED
-import io.github.proify.lyricon.provider.internal.connection.ConnectionNotice.RECONNECTED
+import io.github.proify.lyricon.provider.internal.connection.ConnectionEvent.CONNECTED
+import io.github.proify.lyricon.provider.internal.connection.ConnectionEvent.CONNECT_TIMEOUT
+import io.github.proify.lyricon.provider.internal.connection.ConnectionEvent.DISCONNECTED
+import io.github.proify.lyricon.provider.internal.connection.ConnectionEvent.RECONNECTED
 import io.github.proify.lyricon.provider.internal.connection.ConnectionTrigger.PREEMPT
 import io.github.proify.lyricon.provider.internal.connection.ConnectionTrigger.REGISTER
 import io.github.proify.lyricon.provider.internal.connection.ConnectionTrigger.REGISTRATION_TIMEOUT

@@ -73,7 +73,7 @@ internal sealed interface PlaybackSync {
  * @property displayTranslation 翻译显示配置，null 表示未设置。
  * @property displayRoma 罗马音显示配置，null 表示未设置。
  */
-internal data class PlayerSessionSnapshot(
+internal data class ReplaySnapshot(
     val lyric: LyricContent = LyricContent.Empty,
     val playback: PlaybackSync = PlaybackSync.Manual(playing = false, position = 0L),
     val positionUpdateInterval: Int = -1,
@@ -107,6 +107,6 @@ internal data class PlayerSessionSnapshot(
 
     companion object {
         /** 空快照，即尚未设置任何播放上下文。 */
-        val EMPTY = PlayerSessionSnapshot()
+        val EMPTY = ReplaySnapshot()
     }
 }

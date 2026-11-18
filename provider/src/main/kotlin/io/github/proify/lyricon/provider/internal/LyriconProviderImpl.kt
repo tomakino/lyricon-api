@@ -15,10 +15,10 @@ import io.github.proify.lyricon.provider.LyriconProvider
 import io.github.proify.lyricon.provider.ProviderInfo
 import io.github.proify.lyricon.provider.ProviderService
 import io.github.proify.lyricon.provider.RemotePlayer
-import io.github.proify.lyricon.provider.internal.binding.ProviderCommandStub
+import io.github.proify.lyricon.provider.internal.binding.ProviderServiceStub
 import io.github.proify.lyricon.provider.internal.binding.RegistrationBinder
-import io.github.proify.lyricon.provider.internal.connection.CentralConnection
-import io.github.proify.lyricon.provider.internal.registration.RegistrationCoordinator
+import io.github.proify.lyricon.provider.internal.connection.ProviderLink
+import io.github.proify.lyricon.provider.internal.registration.RegistrationFlow
 import io.github.proify.lyricon.provider.service.RemoteService
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -29,8 +29,8 @@ import java.util.concurrent.atomic.AtomicBoolean
 /**
  * 默认提供端实现。
  *
- * 只负责装配与生命周期：注册流程交给 [RegistrationCoordinator]，
- * 远端连接交给 [CentralConnection]；自动同步由 [autoSync] 策略驱动。
+ * 只负责装配与生命周期：注册流程交给 [RegistrationFlow]，
+ * 远端连接交给 [ProviderLink]；自动同步由 [autoSync] 策略驱动。
  *
  * @property context 注册广播与进程信息所需的上下文。
  * @property providerInfo 提供端注册信息。
@@ -52,16 +52,16 @@ internal class LyriconProviderImpl(
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
     /** 中心服务调用本地命令的 AIDL 桩。 */
-    private val commandStub = ProviderCommandStub(providerService)
+    private val commandStub = ProviderServiceStub(providerService)
 
     /** 与中心服务的连接端点。 */
-    private val connection = CentralConnection(this)
+    private val connection = ProviderLink(this)
 
     /** 注册 AIDL 桩，承载注册回调与注册信息。 */
     private val registrationBinder = RegistrationBinder(providerInfo, commandStub, connection)
 
     /** 注册协调器：广播、超时、重试与启动恢复。 */
-    private val registration = RegistrationCoordinator(
+    private val registration = RegistrationFlow(
         context,
         centralPackageName,
         registrationBinder,

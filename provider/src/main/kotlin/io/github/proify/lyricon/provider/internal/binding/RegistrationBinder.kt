@@ -11,7 +11,7 @@ import io.github.proify.lyricon.provider.IProviderBinder
 import io.github.proify.lyricon.provider.IProviderService
 import io.github.proify.lyricon.provider.IRemoteService
 import io.github.proify.lyricon.provider.ProviderInfo
-import io.github.proify.lyricon.provider.internal.connection.RemoteServiceSink
+import io.github.proify.lyricon.provider.internal.connection.RemoteServiceReceiver
 import io.github.proify.lyricon.provider.internal.wire.json
 
 /**
@@ -19,8 +19,8 @@ import io.github.proify.lyricon.provider.internal.wire.json
  *
  * 该桩负责向中心服务提供注册信息与本地命令 Binder，并接收中心服务返回的远端服务 Binder。
  *
- * 每次注册广播对应一次 [RegistrationAttempt]；尝试被取消（用户断开、销毁或超时）后，
- * 迟到的注册回调将被忽略，不会建立连接。尝试由 [RegistrationAttempts] 托管，
+ * 每次注册广播对应一次 [RegistrationCallback]；尝试被取消（用户断开、销毁或超时）后，
+ * 迟到的注册回调将被忽略，不会建立连接。尝试由 [PendingAttemptSlot] 托管，
  * 保证回调至多被消费一次。
  *
  * @property providerInfo 注册信息，序列化后通过 [getProviderInfo] 交给中心服务。
@@ -29,12 +29,12 @@ import io.github.proify.lyricon.provider.internal.wire.json
  */
 internal class RegistrationBinder(
     providerInfo: ProviderInfo,
-    private val providerCommand: ProviderCommandStub,
-    private val remoteServiceSink: RemoteServiceSink<IRemoteService?>,
+    private val providerCommand: ProviderServiceStub,
+    private val remoteServiceSink: RemoteServiceReceiver<IRemoteService?>,
 ) : IProviderBinder.Stub() {
 
     /** 等待中的注册尝试登记表。 */
-    private val attempts = RegistrationAttempts<RegistrationAttempt>()
+    private val attempts = PendingAttemptSlot<RegistrationCallback>()
 
     /** 注册信息的 JSON 序列化结果（懒生成，只算一次）。 */
     private val serializedProviderInfo: ByteArray by lazy {
@@ -42,12 +42,12 @@ internal class RegistrationBinder(
     }
 
     /** 进入等待中心服务回调的状态。 */
-    fun beginAttempt(attempt: RegistrationAttempt) {
+    fun beginAttempt(attempt: RegistrationCallback) {
         attempts.begin(attempt)
     }
 
     /** 结束等待：仅在 [attempt] 仍为当前尝试时清除。 */
-    fun endAttempt(attempt: RegistrationAttempt) {
+    fun endAttempt(attempt: RegistrationCallback) {
         attempts.end(attempt)
     }
 
@@ -65,8 +65,8 @@ internal class RegistrationBinder(
     override fun getProviderService(): IProviderService = providerCommand
     override fun getProviderInfo(): ByteArray = serializedProviderInfo
 
-    /** 一次注册尝试：中心服务回调返回并处理完成后触发。 */
-    interface RegistrationAttempt {
+    /** 一次注册回调：中心服务回调返回并处理完成后触发。 */
+    interface RegistrationCallback {
         /**
          * 回调已处理完成。
          *

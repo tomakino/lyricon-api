@@ -13,7 +13,7 @@ package io.github.proify.lyricon.provider.internal.binding
  * 保证中心回调至多被消费一次：迟到的回调（尝试已结束）与重复回调
  * 都会拿到 null 而被拦截。
  */
-internal class RegistrationAttempts<T> {
+internal class PendingAttemptSlot<T> {
 
     /** 当前等待中的尝试，null 表示无等待。 */
     @Volatile

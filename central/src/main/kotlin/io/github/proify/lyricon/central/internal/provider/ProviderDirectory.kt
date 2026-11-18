@@ -28,16 +28,22 @@ internal class ProviderDirectory(
      *
      * @param binder 本次注册的 Binder。
      * @param info 提供端身份。
+     * @return 连接与是否本次新建；false 表示复用了已有连接。
      */
-    fun getOrCreate(binder: IProviderBinder, info: ProviderInfo): ProviderConnection {
+    fun getOrCreate(
+        binder: IProviderBinder,
+        info: ProviderInfo,
+    ): Pair<ProviderConnection, Boolean> {
         val existing = registry.get(info)
         if (existing != null) {
             // 提供端以新 Binder 重新注册：换绑死亡监听；已关闭的残留连接会被
             // 清除并由下方新建连接取代。
-            if (existing.reattach(binder)) return existing
+            if (existing.reattach(binder)) return existing to false
             registry.unregister(existing)
         }
-        return registry.register(ProviderConnection(binder, info, activePlayers))
+        val candidate = ProviderConnection(binder, info, activePlayers)
+        val registered = registry.register(candidate)
+        return registered to (registered === candidate)
     }
 
     /** 注销提供端连接。 */

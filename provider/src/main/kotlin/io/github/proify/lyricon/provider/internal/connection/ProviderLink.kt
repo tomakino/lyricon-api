@@ -18,7 +18,7 @@ import io.github.proify.lyricon.provider.LyriconProvider
 import io.github.proify.lyricon.provider.ProviderConstants
 import io.github.proify.lyricon.provider.RemotePlayer
 import io.github.proify.lyricon.provider.internal.player.AidlRemotePlayer
-import io.github.proify.lyricon.provider.internal.player.ResyncingPlayer
+import io.github.proify.lyricon.provider.internal.player.ReplayingPlayer
 import io.github.proify.lyricon.provider.isConnected
 import io.github.proify.lyricon.provider.isDisconnected
 import io.github.proify.lyricon.provider.service.RemoteService
@@ -36,15 +36,15 @@ import java.util.concurrent.CopyOnWriteArraySet
  * @property provider 用于连接监听器回调的提供端实例。
  */
 @RequiresApi(Build.VERSION_CODES.O_MR1)
-internal class CentralConnection(
+internal class ProviderLink(
     private val provider: LyriconProvider,
-) : RemoteService, RemoteServiceSink<IRemoteService?> {
+) : RemoteService, RemoteServiceReceiver<IRemoteService?> {
 
     /** 远端播放器 Binder 通道（AIDL + 共享内存）。 */
     private val playerChannel = AidlRemotePlayer()
 
     /** 带断线重放能力的播放器门面。 */
-    private val playerCache = ResyncingPlayer(playerChannel)
+    private val playerCache = ReplayingPlayer(playerChannel)
 
     /** 连接状态监听器集合。 */
     private val listeners = CopyOnWriteArraySet<ConnectionListener>()
@@ -156,7 +156,7 @@ internal class CentralConnection(
      * 状态与 Binder 操作在同一把锁内完成，保证转移的原子性；
      * 监听器通知在锁外发往主线程，维持原有回调线程模型。
      */
-    private fun transition(trigger: ConnectionTrigger): ConnectionTransition {
+    private fun transition(trigger: ConnectionTrigger): TransitionResult {
         val result = synchronized(transitionLock) {
             val transition = machine.on(trigger, remoteService != null)
             playerChannel.isSendingEnabled = transition.status.isConnected()
@@ -199,17 +199,17 @@ internal class CentralConnection(
      *
      * @param notice 通知类型，null 表示无需分发。
      */
-    private fun dispatchNotice(notice: ConnectionNotice?) {
+    private fun dispatchNotice(notice: ConnectionEvent?) {
         if (notice == null) return
 
         callbackScope.launch {
             listeners.forEach { listener ->
                 runCatching {
                     when (notice) {
-                        ConnectionNotice.CONNECTED -> listener.onConnected(provider)
-                        ConnectionNotice.RECONNECTED -> listener.onReconnected(provider)
-                        ConnectionNotice.DISCONNECTED -> listener.onDisconnected(provider)
-                        ConnectionNotice.CONNECT_TIMEOUT -> listener.onConnectTimeout(provider)
+                        ConnectionEvent.CONNECTED -> listener.onConnected(provider)
+                        ConnectionEvent.RECONNECTED -> listener.onReconnected(provider)
+                        ConnectionEvent.DISCONNECTED -> listener.onDisconnected(provider)
+                        ConnectionEvent.CONNECT_TIMEOUT -> listener.onConnectTimeout(provider)
                     }
                 }.onFailure { Log.e(TAG, "Connection notice dispatch failed", it) }
             }
@@ -217,6 +217,6 @@ internal class CentralConnection(
     }
 
     private companion object {
-        private const val TAG = "CentralConnection"
+        private const val TAG = "ProviderLink"
     }
 }

@@ -103,7 +103,7 @@ internal class ActivePlayerHub : PlayerListener {
         }
     }
 
-    override fun onSendText(session: PlayerSession, text: String?) {
+    override fun onText(session: PlayerSession, text: String?) {
         dispatchIfActive(session, allowDuplicateIfSwitching = false) {
             it.onSendText(text)
         }
@@ -133,7 +133,7 @@ internal class ActivePlayerHub : PlayerListener {
     }
 
     /** 把一份完整报告逐项分发给监听器。 */
-    private fun dispatchSnapshot(snapshot: ActivePlayerReport, listener: ActivePlayerListener) {
+    private fun dispatchSnapshot(snapshot: ActivePlayerSnapshot, listener: ActivePlayerListener) {
         listener.onActiveProviderChanged(snapshot.providerInfo)
         listener.onPlaybackStateChanged(snapshot.isPlaying)
 
@@ -186,7 +186,7 @@ internal class ActivePlayerHub : PlayerListener {
     }
 
     /** 生成该会话在 [isPlaying] 下的完整报告。 */
-    private fun PlayerSession.snapshot(isPlaying: Boolean) = ActivePlayerReport(
+    private fun PlayerSession.snapshot(isPlaying: Boolean) = ActivePlayerSnapshot(
         providerInfo = providerInfo,
         isPlaying = isPlaying,
         song = song,

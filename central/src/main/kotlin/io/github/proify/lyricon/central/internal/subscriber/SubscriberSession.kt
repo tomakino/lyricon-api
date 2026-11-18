@@ -9,6 +9,7 @@ package io.github.proify.lyricon.central.internal.subscriber
 import android.os.SharedMemory
 import android.system.OsConstants
 import android.util.Log
+import io.github.proify.lyricon.central.internal.wire.SongPayloadCache
 import io.github.proify.lyricon.central.internal.wire.json
 import io.github.proify.lyricon.central.provider.player.ActivePlayerListener
 import io.github.proify.lyricon.lyric.model.Song
@@ -55,8 +56,7 @@ internal class SubscriberSession : ActivePlayerListener {
     }
 
     override fun onSongChanged(song: Song?) {
-        val bytes = song?.let { json.encodeToString(it).toByteArray() } ?: byteArrayOf()
-        remoteListener?.onSongChanged(bytes)
+        remoteListener?.onSongChanged(SongPayloadCache.encode(song))
     }
 
     override fun onPlaybackStateChanged(isPlaying: Boolean) {

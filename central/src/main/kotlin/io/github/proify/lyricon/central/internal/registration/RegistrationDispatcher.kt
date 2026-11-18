@@ -46,6 +46,7 @@ internal class RegistrationDispatcher(
     private fun registerProvider(intent: Intent) {
         val binder = getBinder<IProviderBinder>(intent) ?: return
         var connection: ProviderConnection? = null
+        var created = false
 
         try {
             val info = binder.providerInfo
@@ -57,12 +58,14 @@ internal class RegistrationDispatcher(
                 return
             }
 
-            connection = providers.getOrCreate(binder, info)
+            val result = providers.getOrCreate(binder, info)
+            connection = result.first
+            created = result.second
             Log.d(TAG, "Provider registered: $info")
             binder.onRegistrationCallback(connection.service)
         } catch (e: Exception) {
             Log.e(TAG, "Provider registration failed", e)
-            connection?.let { providers.unregister(it) }
+            if (created) connection?.let { providers.unregister(it) }
         }
     }
 
@@ -70,6 +73,7 @@ internal class RegistrationDispatcher(
     private fun registerSubscriber(intent: Intent) {
         val binder = getBinder<ISubscriberBinder>(intent) ?: return
         var connection: SubscriberConnection? = null
+        var created = false
 
         try {
             val info = binder.subscriberInfo
@@ -81,12 +85,14 @@ internal class RegistrationDispatcher(
                 return
             }
 
-            connection = subscribers.getOrCreate(binder, info)
+            val result = subscribers.getOrCreate(binder, info)
+            connection = result.first
+            created = result.second
             Log.d(TAG, "Subscriber registered: $info")
             binder.onRegistrationCallback(connection.service)
         } catch (e: Exception) {
             Log.e(TAG, "Subscriber registration failed", e)
-            connection?.let { subscribers.unregister(it) }
+            if (created) connection?.let { subscribers.unregister(it) }
         }
     }
 

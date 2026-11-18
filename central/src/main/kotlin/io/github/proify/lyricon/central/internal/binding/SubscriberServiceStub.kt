@@ -7,7 +7,7 @@
 package io.github.proify.lyricon.central.internal.binding
 
 import android.os.SharedMemory
-import io.github.proify.lyricon.central.CentralRuntime
+import io.github.proify.lyricon.central.CentralRegistry
 import io.github.proify.lyricon.central.internal.subscriber.SubscriberConnection
 import io.github.proify.lyricon.central.internal.subscriber.SubscriberSession
 import io.github.proify.lyricon.subscriber.IActivePlayerListener
@@ -32,9 +32,9 @@ internal class SubscriberServiceStub(
         subscription.remoteListener = listener
 
         if (listener == null) {
-            CentralRuntime.activePlayers.removeListener(subscription)
+            CentralRegistry.activePlayers.removeListener(subscription)
         } else {
-            CentralRuntime.activePlayers.addListener(subscription)
+            CentralRegistry.activePlayers.addListener(subscription)
         }
     }
 
@@ -44,13 +44,13 @@ internal class SubscriberServiceStub(
     /** 关闭订阅会话并释放连接引用。 */
     fun close() {
         if (!closed.compareAndSet(false, true)) return
-        CentralRuntime.activePlayers.removeListener(subscription)
+        CentralRegistry.activePlayers.removeListener(subscription)
         subscription.close()
         connection = null
     }
 
     override fun disconnect() {
         if (closed.get()) return
-        connection?.let { CentralRuntime.subscribers.unregister(it) }
+        connection?.let { CentralRegistry.subscribers.unregister(it) }
     }
 }

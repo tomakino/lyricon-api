@@ -33,7 +33,7 @@ interface ConnectionListener {
     fun onDisconnected(subscriber: LyriconSubscriber)
 
     /**
-     * 当连接尝试达到最大重试次数仍未成功时触发。
+     * 首次连接超时、进入后台重试时触发。
      *  @param subscriber 触发该事件的订阅者实例。
      */
     fun onConnectTimeout(subscriber: LyriconSubscriber)

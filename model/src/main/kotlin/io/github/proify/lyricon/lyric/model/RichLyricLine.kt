@@ -83,18 +83,23 @@ data class RichLyricLine(
     /**
      * 返回规范化后的深拷贝，原对象不受影响。
      *
-     * 先深拷贝自身；随后对三组 `*Words` 逐词规范化（丢弃无效词、修正持续时间、
-     * 合并碎片、填充空隙），并分别用 `*Words` 重新生成 [text]、[secondary]、
-     * [translation]（对应 `*Words` 为 `null` 或空列表时保留原文本）。
+     * 先对三组 `*Words` 逐词规范化（丢弃无效词、修正持续时间、合并碎片、填充空隙），
+     * 再用结果重建 [text]、[secondary]、[translation]；对应 `*Words` 为 `null`
+     * 或空列表时保留原文本。
      *
      * @return 规范化后的深拷贝
      */
-    override fun normalize(): RichLyricLine = deepCopy().apply {
-        words = words?.normalize()
-        text = words.rebuildTextOrKeep(text)
-        secondaryWords = secondaryWords?.normalize()
-        secondary = secondaryWords.rebuildTextOrKeep(secondary)
-        translationWords = translationWords?.normalize()
-        translation = translationWords.rebuildTextOrKeep(translation)
+    override fun normalize(): RichLyricLine {
+        val normalizedWords = words?.normalize()
+        val normalizedSecondary = secondaryWords?.normalize()
+        val normalizedTranslation = translationWords?.normalize()
+        return copy(
+            words = normalizedWords,
+            text = normalizedWords.rebuildTextOrKeep(text),
+            secondaryWords = normalizedSecondary,
+            secondary = normalizedSecondary.rebuildTextOrKeep(secondary),
+            translationWords = normalizedTranslation,
+            translation = normalizedTranslation.rebuildTextOrKeep(translation),
+        )
     }
 }

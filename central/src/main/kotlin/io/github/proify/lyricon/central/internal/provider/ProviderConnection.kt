@@ -7,7 +7,7 @@
 package io.github.proify.lyricon.central.internal.provider
 
 import android.os.IBinder
-import io.github.proify.lyricon.central.internal.binding.RemoteServiceStub
+import io.github.proify.lyricon.central.internal.binding.ProviderRemoteServiceStub
 import io.github.proify.lyricon.central.internal.connection.BinderDeathTracker
 import io.github.proify.lyricon.central.internal.connection.RemoteConnection
 import io.github.proify.lyricon.central.internal.player.ActivePlayerHub
@@ -32,7 +32,7 @@ internal class ProviderConnection(
 
     override val key: ProviderInfo get() = providerInfo
 
-    val service = RemoteServiceStub(this)
+    val service = ProviderRemoteServiceStub(this)
 
     /** 当前有效的注册 Binder；死亡回调据此判断失效是否仍然成立。 */
     @Volatile

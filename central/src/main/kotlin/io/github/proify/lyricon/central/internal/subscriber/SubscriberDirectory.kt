@@ -21,16 +21,22 @@ internal class SubscriberDirectory {
      *
      * @param binder 本次注册的 Binder。
      * @param info 订阅端身份。
+     * @return 连接与是否本次新建；false 表示复用了已有连接。
      */
-    fun getOrCreate(binder: ISubscriberBinder, info: SubscriberInfo): SubscriberConnection {
+    fun getOrCreate(
+        binder: ISubscriberBinder,
+        info: SubscriberInfo,
+    ): Pair<SubscriberConnection, Boolean> {
         val existing = registry.get(info)
         if (existing != null) {
             // 订阅端以新 Binder 重新注册：换绑死亡监听；已关闭的残留连接会被
             // 清除并由下方新建连接取代。
-            if (existing.reattach(binder)) return existing
+            if (existing.reattach(binder)) return existing to false
             registry.unregister(existing)
         }
-        return registry.register(SubscriberConnection(binder, info))
+        val candidate = SubscriberConnection(binder, info)
+        val registered = registry.register(candidate)
+        return registered to (registered === candidate)
     }
 
     /** 注销订阅端连接。 */

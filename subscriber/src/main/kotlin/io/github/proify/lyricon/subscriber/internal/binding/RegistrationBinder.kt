@@ -16,7 +16,7 @@ import io.github.proify.lyricon.subscriber.internal.wire.json
  * 订阅端暴露给中心服务的 AIDL 适配器。
  *
  * 只负责传递注册信息和接收中心服务返回的远端服务 Binder。
- * 尝试由 [RegistrationAttempts] 托管：尝试被取消（注销/销毁/超时）后，
+ * 尝试由 [PendingAttemptSlot] 托管：尝试被取消（注销/销毁/超时）后，
  * 迟到的注册回调将被忽略，不会建立连接，保证回调至多被消费一次。
  *
  * @property subscriberInfo 订阅端注册信息，序列化后通过 [getSubscriberInfo] 上报。
@@ -25,19 +25,19 @@ internal class RegistrationBinder(
     private val subscriberInfo: SubscriberInfo
 ) : ISubscriberBinder.Stub() {
 
-    private val attempts = RegistrationAttempts<RegistrationAttempt>()
+    private val attempts = PendingAttemptSlot<RegistrationCallback>()
 
     private val serializedSubscriberInfo by lazy {
         json.encodeToString(subscriberInfo).toByteArray()
     }
 
     /** 进入等待中心服务回调的状态。 */
-    fun beginAttempt(attempt: RegistrationAttempt) {
+    fun beginAttempt(attempt: RegistrationCallback) {
         attempts.begin(attempt)
     }
 
     /** 结束等待：仅在 [attempt] 仍为当前尝试时清除。 */
-    fun endAttempt(attempt: RegistrationAttempt) {
+    fun endAttempt(attempt: RegistrationCallback) {
         attempts.end(attempt)
     }
 
@@ -53,8 +53,8 @@ internal class RegistrationBinder(
 
     override fun getSubscriberInfo(): ByteArray = serializedSubscriberInfo
 
-    /** 一次注册尝试：中心服务回调返回后触发。 */
-    interface RegistrationAttempt {
+    /** 一次注册回调：中心服务回调返回后触发。 */
+    interface RegistrationCallback {
         /**
          * 回调已送达。
          *

@@ -13,7 +13,7 @@ import android.util.Log
 import java.util.concurrent.Executors
 
 /**
- * 注册广播接收器：把注册请求交给 [CentralRuntime.registration] 处理。
+ * 注册广播接收器：把注册请求交给 [CentralRegistry.registration] 处理。
  */
 internal object CentralReceiver : BroadcastReceiver() {
 
@@ -31,7 +31,7 @@ internal object CentralReceiver : BroadcastReceiver() {
         val pending = goAsync()
         executor.execute {
             try {
-                CentralRuntime.registration.handle(intent)
+                CentralRegistry.registration.handle(intent)
             } catch (t: Throwable) {
                 Log.e(TAG, "Registration handling failed", t)
             } finally {

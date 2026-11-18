@@ -13,14 +13,14 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
-class ResyncingPlayerTest {
+class ReplayingPlayerTest {
 
     // ---- 手动模式重放 ----
 
     @Test
     fun replayManualSnapshotInOriginalOrder() {
         val channel = RecordingPlayer()
-        val player = ResyncingPlayer(channel)
+        val player = ReplayingPlayer(channel)
 
         player.setPositionUpdateInterval(40)
         player.setDisplayTranslation(true)
@@ -48,7 +48,7 @@ class ResyncingPlayerTest {
     @Test
     fun replaySongClearedAsNullAfterText() {
         val channel = RecordingPlayer()
-        val player = ResyncingPlayer(channel)
+        val player = ReplayingPlayer(channel)
 
         player.setSong(Song(name = "demo"))
         player.sendText("hello")
@@ -66,7 +66,7 @@ class ResyncingPlayerTest {
     @Test
     fun replayEmptySnapshotDoesNothing() {
         val channel = RecordingPlayer()
-        val player = ResyncingPlayer(channel)
+        val player = ReplayingPlayer(channel)
 
         player.sync()
 
@@ -82,7 +82,7 @@ class ResyncingPlayerTest {
     @Test
     fun stateDrivenModeKeepsManualContextAcrossSwitches() {
         val channel = RecordingPlayer()
-        val player = ResyncingPlayer(channel)
+        val player = ReplayingPlayer(channel)
 
         player.setPlaybackState(true)
         player.setPosition(1000)
@@ -101,7 +101,7 @@ class ResyncingPlayerTest {
     @Test
     fun positionUpdateDoesNotSwitchAwayFromStateDriven() {
         val channel = RecordingPlayer()
-        val player = ResyncingPlayer(channel)
+        val player = ReplayingPlayer(channel)
 
         player.setPlaybackState(null as PlaybackState?)
         player.setPosition(123)
@@ -115,7 +115,7 @@ class ResyncingPlayerTest {
     @Test
     fun seekDoesNotSwitchAwayFromStateDriven() {
         val channel = RecordingPlayer()
-        val player = ResyncingPlayer(channel)
+        val player = ReplayingPlayer(channel)
 
         player.setPlaybackState(null as PlaybackState?)
         player.seekTo(456)
@@ -129,7 +129,7 @@ class ResyncingPlayerTest {
     @Test
     fun stateDrivenReplaySendsPlaybackState() {
         val channel = RecordingPlayer()
-        val player = ResyncingPlayer(channel)
+        val player = ReplayingPlayer(channel)
 
         player.setPositionUpdateInterval(50)
         player.setSong(Song(name = "demo"))
@@ -153,7 +153,7 @@ class ResyncingPlayerTest {
     @Test
     fun writesAreForwardedToChannelImmediately() {
         val channel = RecordingPlayer()
-        val player = ResyncingPlayer(channel)
+        val player = ReplayingPlayer(channel)
 
         player.setSong(Song(name = "demo"))
         player.setPlaybackState(true)
@@ -167,7 +167,7 @@ class ResyncingPlayerTest {
     @Test
     fun negativePositionsAreCoercedToZero() {
         val channel = RecordingPlayer()
-        val player = ResyncingPlayer(channel)
+        val player = ReplayingPlayer(channel)
 
         player.setPosition(-100)
 

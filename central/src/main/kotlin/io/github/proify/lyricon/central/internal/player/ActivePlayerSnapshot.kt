@@ -14,7 +14,7 @@ import io.github.proify.lyricon.provider.ProviderInfo
  *
  * 活跃播放器切换或新监听器加入时，以该快照全量同步一次状态。
  */
-internal data class ActivePlayerReport(
+internal data class ActivePlayerSnapshot(
     val providerInfo: ProviderInfo,
     val isPlaying: Boolean,
     val song: Song?,

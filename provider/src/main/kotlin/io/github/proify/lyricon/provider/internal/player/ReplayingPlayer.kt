@@ -13,18 +13,18 @@ import io.github.proify.lyricon.provider.RemotePlayer
 /**
  * [RemotePlayer] 的装饰器实现，支持断线重连后的状态恢复。
  *
- * 内部维护不可变的 [PlayerSessionSnapshot]。当远程连接断开时，外部调用仍能更新快照；
+ * 内部维护不可变的 [ReplaySnapshot]。当远程连接断开时，外部调用仍能更新快照；
  * 当连接恢复并调用 [sync] 时，快照会被整体回放到远端通道。
  *
  * @property channel 实际的远端播放器通道。
  */
-internal class ResyncingPlayer(
+internal class ReplayingPlayer(
     private val channel: RemotePlayer,
 ) : RemotePlayer {
 
     /** 当前的播放会话快照；对外始终是一致的一份。 */
     @Volatile
-    private var snapshot: PlayerSessionSnapshot = PlayerSessionSnapshot.EMPTY
+    private var snapshot: ReplaySnapshot = ReplaySnapshot.EMPTY
 
     /** 快照读改写互斥锁，防止并发写入丢更新。 */
     private val updateLock = Any()
@@ -34,7 +34,7 @@ internal class ResyncingPlayer(
      *
      * @param transform 基于当前快照产生新快照的转换函数。
      */
-    private inline fun commit(transform: (PlayerSessionSnapshot) -> PlayerSessionSnapshot) {
+    private inline fun commit(transform: (ReplaySnapshot) -> ReplaySnapshot) {
         synchronized(updateLock) {
             snapshot = transform(snapshot)
         }

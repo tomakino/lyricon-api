@@ -64,14 +64,16 @@ data class LyricLine(
     /**
      * 返回规范化后的深拷贝，原对象不受影响。
      *
-     * 先深拷贝自身；随后对 [words] 逐词规范化（丢弃无效词、修正持续时间、
-     * 合并碎片、填充空隙）；最后用 [words] 重新拼接 [text]，[words] 为
-     * `null` 或空列表时保留原 [text]。
+     * 先对 [words] 逐词规范化（丢弃无效词、修正持续时间、合并碎片、填充空隙），
+     * 再用结果重建 [text]；[words] 为 `null` 或空列表时保留原 [text]。
      *
      * @return 规范化后的深拷贝
      */
-    override fun normalize(): LyricLine = deepCopy().apply {
-        words = words?.normalize()
-        text = words.rebuildTextOrKeep(text)
+    override fun normalize(): LyricLine {
+        val normalizedWords = words?.normalize()
+        return copy(
+            words = normalizedWords,
+            text = normalizedWords.rebuildTextOrKeep(text),
+        )
     }
 }

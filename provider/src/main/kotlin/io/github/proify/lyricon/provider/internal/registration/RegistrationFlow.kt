@@ -15,7 +15,7 @@ import io.github.proify.lyricon.provider.ProviderConstants
 import io.github.proify.lyricon.provider.ProviderConstants.ACTION_REGISTER_PROVIDER
 import io.github.proify.lyricon.provider.ProviderConstants.EXTRA_BINDER
 import io.github.proify.lyricon.provider.internal.binding.RegistrationBinder
-import io.github.proify.lyricon.provider.internal.connection.CentralConnection
+import io.github.proify.lyricon.provider.internal.connection.ProviderLink
 import io.github.proify.lyricon.provider.isDisconnected
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
@@ -40,11 +40,11 @@ import kotlinx.coroutines.launch
  * @property scope 超时与重试协程的宿主作用域。
  */
 @RequiresApi(Build.VERSION_CODES.O_MR1)
-internal class RegistrationCoordinator(
+internal class RegistrationFlow(
     private val context: Context,
     private val centralPackageName: String,
     private val registrationBinder: RegistrationBinder,
-    private val connection: CentralConnection,
+    private val connection: ProviderLink,
     private val scope: CoroutineScope,
 ) : CentralBootReceiver.BootListener {
 
@@ -65,7 +65,7 @@ internal class RegistrationCoordinator(
     private var retryDelayMs: Long = INITIAL_RETRY_DELAY_MS
 
     /** 当前注册尝试的回调：成功后停止重试，失败后安排下一次重试。 */
-    private val attempt = object : RegistrationBinder.RegistrationAttempt {
+    private val attempt = object : RegistrationBinder.RegistrationCallback {
         override fun onCompleted(connected: Boolean) {
             onAttemptCompleted(connected)
         }

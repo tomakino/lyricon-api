@@ -56,7 +56,7 @@ internal interface PlayerListener {
      * @param session 事件来源的播放器会话
      * @param text    需要展示或处理的文本内容，可能为空
      */
-    fun onSendText(session: PlayerSession, text: String?)
+    fun onText(session: PlayerSession, text: String?)
 
     /**
      * 播放器显示翻译状态发生变化时回调。

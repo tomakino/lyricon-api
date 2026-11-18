@@ -20,7 +20,7 @@ import io.github.proify.lyricon.subscriber.internal.player.PlayerEventDispatcher
  * 负责维护中心服务返回的 [IRemoteService]、监听 Binder 死亡，并桥接活跃播放器事件。
  */
 @RequiresApi(Build.VERSION_CODES.O_MR1)
-internal class CentralConnection(
+internal class SubscriberLink(
     onRemoteDied: () -> Unit,
 ) {
     private var remoteService: IRemoteService? = null
@@ -66,6 +66,6 @@ internal class CentralConnection(
     }
 
     private companion object {
-        private const val TAG = "CentralConnection"
+        private const val TAG = "SubscriberLink"
     }
 }

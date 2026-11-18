@@ -40,7 +40,7 @@ import java.util.concurrent.atomic.AtomicBoolean
  * 位置计算由 [PlaybackStateTracker] 负责，本类只做 PlaybackState 与
  * 原始参数的适配。
  */
-internal class PlayerCommandStub(
+internal class RemotePlayerStub(
     info: ProviderInfo,
     private val playerEvents: PlayerListener
 ) : IRemotePlayer.Stub(), ScreenStateMonitor.ScreenStateListener {
@@ -60,15 +60,18 @@ internal class PlayerCommandStub(
     @Volatile
     private var positionUpdateInterval: Long = ProviderConstants.DEFAULT_POSITION_UPDATE_INTERVAL
 
-    /** 待解码的歌曲队列：保证 setSong 按到达顺序处理，避免并发解码乱序。 */
-    private val songQueue = Channel<ByteArray?>(Channel.UNLIMITED)
+    /** 歌词内容队列：setSong/sendText 按到达顺序处理，避免解码与写入乱序。 */
+    private val lyricQueue = Channel<LyricPayload>(Channel.UNLIMITED)
 
     init {
         positionTracker.manualPositionReader = positionMemory::readPosition
         ScreenStateMonitor.addListener(this)
         scope.launch {
-            for (bytes in songQueue) {
-                processSong(bytes)
+            for (payload in lyricQueue) {
+                when (payload) {
+                    is LyricPayload.SongPayload -> processSong(payload.bytes)
+                    is LyricPayload.TextPayload -> processText(payload.text)
+                }
             }
         }
     }
@@ -79,7 +82,7 @@ internal class PlayerCommandStub(
         ScreenStateMonitor.removeListener(this)
         stopPositionUpdate()
 
-        songQueue.cancel()
+        lyricQueue.cancel()
         scope.launch {
             closeMutex.withLock {
                 positionMemory.close()
@@ -115,7 +118,7 @@ internal class PlayerCommandStub(
         if (closed.get()) return
 
         // 入队顺序与调用顺序一致；解码在单消费者中按序完成。
-        songQueue.trySend(bytes)
+        lyricQueue.trySend(LyricPayload.SongPayload(bytes))
     }
 
     override fun setPlaybackState(isPlaying: Boolean) {
@@ -173,8 +176,7 @@ internal class PlayerCommandStub(
     override fun sendText(text: String?) {
         if (closed.get()) return
 
-        session.text = text
-        playerEvents.safeNotify { onSendText(session, text) }
+        lyricQueue.trySend(LyricPayload.TextPayload(text))
     }
 
     override fun setDisplayTranslation(isDisplayTranslation: Boolean) {
@@ -208,9 +210,21 @@ internal class PlayerCommandStub(
             }.getOrNull()
         }
 
-        val normalized = song?.normalize()
+        val normalized = runCatching { song?.normalize() }
+            .onFailure { Log.e(TAG, "Failed to normalize song", it) }
+            .getOrNull()
         session.song = normalized
         playerEvents.safeNotify { onSongChanged(session, normalized) }
+    }
+
+    private sealed interface LyricPayload {
+        data class SongPayload(val bytes: ByteArray?) : LyricPayload
+        data class TextPayload(val text: String?) : LyricPayload
+    }
+
+    private fun processText(text: String?) {
+        session.text = text
+        playerEvents.safeNotify { onText(session, text) }
     }
 
     private fun startPositionUpdate() {
@@ -239,7 +253,7 @@ internal class PlayerCommandStub(
     }
 
     private companion object {
-        private const val TAG = "PlayerCommandStub"
+        private const val TAG = "RemotePlayerStub"
         private const val MIN_INTERVAL_MS = 16L
     }
 }

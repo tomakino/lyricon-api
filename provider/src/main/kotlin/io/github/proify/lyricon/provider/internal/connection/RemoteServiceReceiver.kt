@@ -11,7 +11,7 @@ package io.github.proify.lyricon.provider.internal.connection
  *
  * 用于把 AIDL 注册回调返回的远端服务实例交给内部连接端点。
  */
-internal interface RemoteServiceSink<T> {
+internal interface RemoteServiceReceiver<T> {
     /**
      * 接收新的远端服务实例。
      *

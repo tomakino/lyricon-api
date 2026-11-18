@@ -31,7 +31,7 @@ internal enum class ConnectionTrigger {
 }
 
 /** 状态机产生的一次对外通知。 */
-internal enum class ConnectionNotice {
+internal enum class ConnectionEvent {
     /** 首次连接成功。 */
     CONNECTED,
 
@@ -51,16 +51,16 @@ internal enum class ConnectionNotice {
  * @property status 转移后的连接状态。
  * @property notice 需要分发给监听器的通知，null 表示无通知。
  */
-internal data class ConnectionTransition(
+internal data class TransitionResult(
     val status: ConnectionStatus,
-    val notice: ConnectionNotice?,
+    val notice: ConnectionEvent?,
 )
 
 /**
  * 提供端连接状态机（纯 Kotlin，可单元测试）。
  *
  * 所有状态转移都经由 [on] 完成：状态与监听器通知在同一处决定，
- * [CentralConnection] 只负责把转移翻译成实际的 Binder 操作。
+ * [ProviderLink] 只负责把转移翻译成实际的 Binder 操作。
  */
 /**
  * @property initialStatus 初始连接状态，默认 [ConnectionStatus.DISCONNECTED]（用于测试或恢复）。
@@ -82,9 +82,9 @@ internal class ConnectionStateMachine(
      *
      * @param trigger 触发事件。
      * @param serviceWasBound 拆除旧连接时是否有已绑定的远端服务；
-     *   决定是否产生 [ConnectionNotice.DISCONNECTED] 通知，与原有实现保持一致。
+     *   决定是否产生 [ConnectionEvent.DISCONNECTED] 通知，与原有实现保持一致。
      */
-    fun on(trigger: ConnectionTrigger, serviceWasBound: Boolean = false): ConnectionTransition {
+    fun on(trigger: ConnectionTrigger, serviceWasBound: Boolean = false): TransitionResult {
         val transition = transitionFor(trigger, serviceWasBound)
         status = transition.status
         return transition
@@ -99,50 +99,50 @@ internal class ConnectionStateMachine(
     private fun transitionFor(
         trigger: ConnectionTrigger,
         serviceWasBound: Boolean,
-    ): ConnectionTransition = when (trigger) {
+    ): TransitionResult = when (trigger) {
             ConnectionTrigger.REGISTER ->
                 if (status.isDisconnected()) {
-                    ConnectionTransition(ConnectionStatus.CONNECTING, null)
+                    TransitionResult(ConnectionStatus.CONNECTING, null)
                 } else {
-                    ConnectionTransition(status, null)
+                    TransitionResult(status, null)
                 }
 
             ConnectionTrigger.REGISTRATION_TIMEOUT ->
                 if (status == ConnectionStatus.CONNECTING) {
-                    ConnectionTransition(
+                    TransitionResult(
                         ConnectionStatus.DISCONNECTED,
-                        ConnectionNotice.CONNECT_TIMEOUT
+                        ConnectionEvent.CONNECT_TIMEOUT
                     )
                 } else {
-                    ConnectionTransition(status, null)
+                    TransitionResult(status, null)
                 }
 
             ConnectionTrigger.SERVICE_READY -> {
                 val notice = if (hasConnectedBefore) {
-                    ConnectionNotice.RECONNECTED
+                    ConnectionEvent.RECONNECTED
                 } else {
-                    ConnectionNotice.CONNECTED
+                    ConnectionEvent.CONNECTED
                 }
                 hasConnectedBefore = true
-                ConnectionTransition(ConnectionStatus.CONNECTED, notice)
+                TransitionResult(ConnectionStatus.CONNECTED, notice)
             }
 
             ConnectionTrigger.SERVICE_LOST ->
-                ConnectionTransition(
+                TransitionResult(
                     ConnectionStatus.DISCONNECTED_REMOTE,
-                    ConnectionNotice.DISCONNECTED.takeIf { serviceWasBound }
+                    ConnectionEvent.DISCONNECTED.takeIf { serviceWasBound }
                 )
 
             ConnectionTrigger.PREEMPT ->
-                ConnectionTransition(
+                TransitionResult(
                     ConnectionStatus.DISCONNECTED,
-                    ConnectionNotice.DISCONNECTED.takeIf { serviceWasBound }
+                    ConnectionEvent.DISCONNECTED.takeIf { serviceWasBound }
                 )
 
             ConnectionTrigger.USER_DISCONNECT ->
-                ConnectionTransition(
+                TransitionResult(
                     ConnectionStatus.DISCONNECTED_USER,
-                    ConnectionNotice.DISCONNECTED.takeIf { serviceWasBound }
+                    ConnectionEvent.DISCONNECTED.takeIf { serviceWasBound }
                 )
         }
 }
