@@ -13,7 +13,7 @@ import io.github.proify.lyricon.central.internal.provider.ProviderConnection
 import io.github.proify.lyricon.central.internal.provider.ProviderDirectory
 import io.github.proify.lyricon.central.internal.subscriber.SubscriberConnection
 import io.github.proify.lyricon.central.internal.subscriber.SubscriberDirectory
-import io.github.proify.lyricon.central.internal.wire.json
+import io.github.proify.lyricon.core.wire.wireJson
 import io.github.proify.lyricon.provider.IProviderBinder
 import io.github.proify.lyricon.provider.ProviderInfo
 import io.github.proify.lyricon.subscriber.ISubscriberBinder
@@ -51,7 +51,7 @@ internal class RegistrationDispatcher(
         try {
             val info = binder.providerInfo
                 ?.toString(Charsets.UTF_8)
-                ?.let { json.decodeFromString(ProviderInfo.serializer(), it) }
+                ?.let { wireJson.decodeFromString(ProviderInfo.serializer(), it) }
 
             if (info?.providerPackageName.isNullOrBlank() || info.playerPackageName.isBlank()) {
                 Log.e(TAG, "Provider info is invalid: $info")
@@ -78,7 +78,7 @@ internal class RegistrationDispatcher(
         try {
             val info = binder.subscriberInfo
                 ?.toString(Charsets.UTF_8)
-                ?.let { json.decodeFromString(SubscriberInfo.serializer(), it) }
+                ?.let { wireJson.decodeFromString(SubscriberInfo.serializer(), it) }
 
             if (info?.packageName.isNullOrBlank() || info.processName.isBlank()) {
                 Log.e(TAG, "Subscriber info is invalid: $info")

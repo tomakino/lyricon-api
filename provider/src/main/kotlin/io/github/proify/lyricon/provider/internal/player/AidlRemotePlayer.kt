@@ -14,8 +14,8 @@ import androidx.annotation.RequiresApi
 import io.github.proify.lyricon.lyric.model.Song
 import io.github.proify.lyricon.provider.IRemotePlayer
 import io.github.proify.lyricon.provider.RemotePlayer
-import io.github.proify.lyricon.provider.internal.wire.deflate
-import io.github.proify.lyricon.provider.internal.wire.json
+import io.github.proify.lyricon.core.wire.deflate
+import io.github.proify.lyricon.core.wire.wireJson
 import java.nio.ByteBuffer
 
 /**
@@ -66,7 +66,7 @@ internal class AidlRemotePlayer : RemotePlayer {
     }
 
     override fun setSong(song: Song?): Boolean = send {
-        setSong(song?.let { json.encodeToString(it).toByteArray().deflate() })
+        setSong(song?.let { wireJson.encodeToString(it).toByteArray().deflate() })
     }
 
     override fun setPlaybackState(playing: Boolean): Boolean = send {

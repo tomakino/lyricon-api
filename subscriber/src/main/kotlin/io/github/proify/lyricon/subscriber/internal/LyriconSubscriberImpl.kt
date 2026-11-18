@@ -131,7 +131,7 @@ internal class LyriconSubscriberImpl(
     /**
      * 注册协调器：发送注册广播、管理超时重试与中心重启后的恢复注册。
      *
-     * 注册尝试（[io.github.proify.lyricon.subscriber.internal.binding.PendingAttemptSlot] + [RegistrationBinder]）保证回调至多被消费一次：
+     * 注册尝试（[io.github.proify.lyricon.core.binding.PendingAttemptSlot] + [RegistrationBinder]）保证回调至多被消费一次：
      * - 注销/销毁会结束尝试，迟到回调不再建立连接；
      * - 连接中重复注册被拒绝，避免重复广播与重复 onConnected；
      * - 超时后仍期望连接时，中心启动广播可恢复注册。

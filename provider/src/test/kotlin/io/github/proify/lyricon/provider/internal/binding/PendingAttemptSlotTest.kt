@@ -6,6 +6,8 @@
 
 package io.github.proify.lyricon.provider.internal.binding
 
+import io.github.proify.lyricon.core.binding.PendingAttemptSlot
+
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Test

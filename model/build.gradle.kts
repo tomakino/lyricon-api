@@ -6,6 +6,9 @@ plugins {
     alias(libs.plugins.kotlin.serialization)
 }
 
+group = "io.github.proify.lyricon.lyric"
+project.version = rootProject.extra.get("lyricModelVersion") as String
+
 java {
     sourceCompatibility = JavaVersion.VERSION_11
     targetCompatibility = JavaVersion.VERSION_11

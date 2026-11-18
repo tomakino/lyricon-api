@@ -8,6 +8,9 @@ plugins {
     id("com.vanniktech.maven.publish")
 }
 
+group = "io.github.proify.lyricon"
+project.version = rootProject.extra.get("subscriberSdkVersion") as String
+
 android {
     namespace = "io.github.proify.lyricon.subscriber"
     compileSdk {
@@ -41,6 +44,7 @@ android {
 }
 
 dependencies {
+    api(project(":core"))
     api(project(":model"))
     api(libs.kotlinx.serialization.json)
     api(libs.androidx.core.ktx)

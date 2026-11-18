@@ -10,7 +10,7 @@ import android.os.SharedMemory
 import android.system.OsConstants
 import android.util.Log
 import io.github.proify.lyricon.central.internal.wire.SongPayloadCache
-import io.github.proify.lyricon.central.internal.wire.json
+import io.github.proify.lyricon.core.wire.wireJson
 import io.github.proify.lyricon.central.provider.player.ActivePlayerListener
 import io.github.proify.lyricon.lyric.model.Song
 import io.github.proify.lyricon.provider.ProviderInfo
@@ -46,7 +46,7 @@ internal class SubscriberSession : ActivePlayerListener {
             return
         }
 
-        remoteListener?.onActiveProviderChanged(json.encodeToString(providerInfo).toByteArray())
+        remoteListener?.onActiveProviderChanged(wireJson.encodeToString(providerInfo).toByteArray())
     }
 
     override fun onSongChanged(song: Song?) {

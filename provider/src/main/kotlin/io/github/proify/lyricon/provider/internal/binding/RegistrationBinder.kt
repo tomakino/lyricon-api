@@ -12,7 +12,8 @@ import io.github.proify.lyricon.provider.IProviderService
 import io.github.proify.lyricon.provider.IRemoteService
 import io.github.proify.lyricon.provider.ProviderInfo
 import io.github.proify.lyricon.provider.internal.connection.RemoteServiceReceiver
-import io.github.proify.lyricon.provider.internal.wire.json
+import io.github.proify.lyricon.core.binding.PendingAttemptSlot
+import io.github.proify.lyricon.core.wire.wireJson
 
 /**
  * 提供端暴露给中心服务的注册 AIDL 适配器。
@@ -38,7 +39,7 @@ internal class RegistrationBinder(
 
     /** 注册信息的 JSON 序列化结果（懒生成，只算一次）。 */
     private val serializedProviderInfo: ByteArray by lazy {
-        json.encodeToString(providerInfo).toByteArray()
+        wireJson.encodeToString(providerInfo).toByteArray()
     }
 
     /** 进入等待中心服务回调的状态。 */

@@ -10,7 +10,8 @@ import android.util.Log
 import io.github.proify.lyricon.subscriber.IRemoteService
 import io.github.proify.lyricon.subscriber.ISubscriberBinder
 import io.github.proify.lyricon.subscriber.SubscriberInfo
-import io.github.proify.lyricon.subscriber.internal.wire.json
+import io.github.proify.lyricon.core.binding.PendingAttemptSlot
+import io.github.proify.lyricon.core.wire.wireJson
 
 /**
  * 订阅端暴露给中心服务的 AIDL 适配器。
@@ -28,7 +29,7 @@ internal class RegistrationBinder(
     private val attempts = PendingAttemptSlot<RegistrationCallback>()
 
     private val serializedSubscriberInfo by lazy {
-        json.encodeToString(subscriberInfo).toByteArray()
+        wireJson.encodeToString(subscriberInfo).toByteArray()
     }
 
     /** 进入等待中心服务回调的状态。 */

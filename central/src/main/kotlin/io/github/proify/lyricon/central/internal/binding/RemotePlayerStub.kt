@@ -15,8 +15,8 @@ import io.github.proify.lyricon.central.internal.player.PlayerListener
 import io.github.proify.lyricon.central.internal.player.PositionMemoryChannel
 import io.github.proify.lyricon.central.internal.player.PositionTicker
 import io.github.proify.lyricon.central.internal.util.ScreenStateMonitor
-import io.github.proify.lyricon.central.internal.wire.inflate
-import io.github.proify.lyricon.central.internal.wire.json
+import io.github.proify.lyricon.core.wire.inflate
+import io.github.proify.lyricon.core.wire.wireJson
 import io.github.proify.lyricon.lyric.model.Song
 import io.github.proify.lyricon.provider.IRemotePlayer
 import io.github.proify.lyricon.provider.ProviderConstants
@@ -199,7 +199,7 @@ internal class RemotePlayerStub(
                     .inputStream()
                     .buffered()
                     .use { stream ->
-                        json.decodeFromStream(Song.serializer(), stream)
+                        wireJson.decodeFromStream(Song.serializer(), stream)
                     }
             }.getOrNull()
         }

@@ -6,6 +6,7 @@
 
 package io.github.proify.lyricon.central.internal.wire
 
+import io.github.proify.lyricon.core.wire.wireJson
 import io.github.proify.lyricon.lyric.model.Song
 
 /**
@@ -33,7 +34,7 @@ internal object SongPayloadCache {
         if (song == null) return EMPTY
         if (song === cachedSong) return cachedBytes
 
-        val bytes = json.encodeToString(song).toByteArray()
+        val bytes = wireJson.encodeToString(song).toByteArray()
         cachedSong = song
         cachedBytes = bytes
         return bytes

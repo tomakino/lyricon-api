@@ -9,6 +9,9 @@ plugins {
     id("com.vanniktech.maven.publish")
 }
 
+group = "io.github.proify.lyricon"
+project.version = rootProject.extra.get("providerSdkVersion") as String
+
 configure<LibraryExtension> {
     namespace = "io.github.proify.lyricon.provider"
     compileSdk {
@@ -44,6 +47,7 @@ configure<LibraryExtension> {
 }
 
 dependencies {
+    api(project(":core"))
     api(project(":model"))
     api(libs.androidx.core.ktx)
     api(libs.androidx.appcompat.resources)

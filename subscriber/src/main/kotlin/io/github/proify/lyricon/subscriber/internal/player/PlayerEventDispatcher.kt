@@ -14,7 +14,7 @@ import io.github.proify.lyricon.lyric.model.Song
 import io.github.proify.lyricon.subscriber.ActivePlayerListener
 import io.github.proify.lyricon.subscriber.IActivePlayerListener
 import io.github.proify.lyricon.subscriber.ProviderInfo
-import io.github.proify.lyricon.subscriber.internal.wire.json
+import io.github.proify.lyricon.core.wire.wireJson
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -154,7 +154,7 @@ internal class PlayerEventDispatcher : IActivePlayerListener.Stub() {
     }
 
     private inline fun <reified T> ByteArray.decode(): T? =
-        runCatching { json.decodeFromString<T>(decodeToString()) }
+        runCatching { wireJson.decodeFromString<T>(decodeToString()) }
             .onFailure { Log.e(TAG, "Failed to decode active-player payload", it) }
             .getOrNull()
 

@@ -33,6 +33,7 @@ configure<LibraryExtension> {
 }
 
 dependencies {
+    implementation(project(":core"))
     api(project(":provider"))
     api(project(":subscriber"))
 

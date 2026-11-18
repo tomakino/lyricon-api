@@ -8,7 +8,7 @@ package io.github.proify.lyricon.central.internal.provider
 
 import android.os.IBinder
 import io.github.proify.lyricon.central.internal.binding.ProviderRemoteServiceStub
-import io.github.proify.lyricon.central.internal.connection.BinderDeathTracker
+import io.github.proify.lyricon.core.connection.BinderDeathTracker
 import io.github.proify.lyricon.central.internal.connection.RemoteConnection
 import io.github.proify.lyricon.central.internal.player.ActivePlayerHub
 import io.github.proify.lyricon.provider.IProviderBinder
