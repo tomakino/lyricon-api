@@ -11,6 +11,8 @@ import io.github.proify.lyricon.lyric.model.Song
 /**
  * 活跃播放器状态监听器。
  * 用于接收当前正在运行的媒体播放器的元数据、播放状态以及歌词配置变更。
+ *
+ * @since 0.1.80
  */
 interface ActivePlayerListener {
 

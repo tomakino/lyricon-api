@@ -8,6 +8,8 @@ package io.github.proify.lyricon.provider
 
 /**
  * 中央服务连接状态监听器。
+ *
+ * @since 0.1.80
  */
 interface ConnectionListener {
 

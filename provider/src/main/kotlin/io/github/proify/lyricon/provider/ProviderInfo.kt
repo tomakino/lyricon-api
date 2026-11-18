@@ -21,6 +21,7 @@ import kotlinx.serialization.Serializable
  * @property logo 提供端或播放器图标。
  * @property metadata 提供端附加元数据。
  * @property processName 播放器所在进程名。
+ * @since 0.1.80
  */
 @Serializable
 @Parcelize

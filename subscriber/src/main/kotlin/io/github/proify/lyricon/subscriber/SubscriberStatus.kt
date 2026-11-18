@@ -8,7 +8,11 @@
 
 package io.github.proify.lyricon.subscriber
 
-/** 订阅端与中心服务之间的连接状态。 */
+/**
+ * 订阅端与中心服务之间的连接状态。
+ *
+ * @since 0.1.80
+ */
 enum class SubscriberStatus {
     /** 未连接或已由本地主动断开。 */
     DISCONNECTED,

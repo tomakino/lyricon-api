@@ -10,7 +10,11 @@ import android.media.session.PlaybackState
 import io.github.proify.lyricon.lyric.model.Song
 import io.github.proify.lyricon.provider.service.RemoteService
 
-/** 不支持当前运行环境时返回的提供端空实现。 */
+/**
+ * 不支持当前运行环境时返回的提供端空实现。
+ *
+ * @since 0.1.80
+ */
 class EmptyProvider(override val providerInfo: ProviderInfo) : LyriconProvider {
     override val service: RemoteService = EmptyRemoteService
     override val player = service.player

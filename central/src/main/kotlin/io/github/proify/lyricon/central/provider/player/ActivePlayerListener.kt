@@ -25,6 +25,8 @@ import io.github.proify.lyricon.provider.ProviderInfo
  *
  * 回调实现抛出的异常会被 central 捕获并记录，不会中断其他监听器的分发；但监听方仍应
  * 尽量自行处理异常，保持回调逻辑轻量、幂等。
+ *
+ * @since 1.0.1
  */
 interface ActivePlayerListener {
 

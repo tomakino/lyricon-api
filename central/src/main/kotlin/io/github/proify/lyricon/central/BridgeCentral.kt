@@ -20,6 +20,8 @@ import io.github.proify.lyricon.central.internal.util.ScreenStateMonitor
  * 负责初始化全局 Context，并管理核心广播通信：
  * - 注册 [CentralReceiver] 接收提供者注册请求；
  * - 向系统或其他组件发送启动完成广播。
+ *
+ * @since 1.0.1
  */
 @SuppressLint("StaticFieldLeak")
 object BridgeCentral {

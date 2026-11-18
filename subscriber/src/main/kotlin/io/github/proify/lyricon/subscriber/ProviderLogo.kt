@@ -23,6 +23,7 @@ import kotlinx.serialization.Serializable
  * @property data 图标原始字节数据。
  * @property type 图标类型，取值见 [TYPE_BITMAP]、[TYPE_SVG]。
  * @property colorful 是否为彩色图标；中心服务可据此决定是否应用着色。
+ * @since 0.1.80
  */
 @Serializable
 data class ProviderLogo(

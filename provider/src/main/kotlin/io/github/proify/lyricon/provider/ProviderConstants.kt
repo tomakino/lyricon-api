@@ -5,7 +5,11 @@
  */
 package io.github.proify.lyricon.provider
 
-/** 提供端与中心服务交互使用的常量。 */
+/**
+ * 提供端与中心服务交互使用的常量。
+ *
+ * @since 0.1.80
+ */
 object ProviderConstants {
 
     /** 默认播放进度写入间隔，约 24 FPS。 */
@@ -27,6 +31,6 @@ object ProviderConstants {
     /** Bundle 中提供端 Binder 的 key。 */
     internal const val EXTRA_BINDER: String = "binder"
 
-    /** 默认中心服务包名。 */
+    /** 默认中心服务宿主（SystemUI）包名。 */
     const val SYSTEM_UI_PACKAGE_NAME: String = "com.android.systemui"
 }

@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Copyright 2026 Proify, Tomakino
  * Licensed under the Apache License, Version 2.0
  * http://www.apache.org/licenses/LICENSE-2.0
@@ -14,6 +14,13 @@ import com.highcapable.yukihookapi.hook.log.YLog
 import com.highcapable.yukihookapi.hook.xposed.YukiHookXposedModule
 import io.github.proify.lyricon.central.BridgeCentral
 
+/**
+ * Lyricon 的 Xposed 入口。
+ *
+ * 注入 `com.android.systemui`，在 Application 创建时初始化中央服务。
+ *
+ * @since 1.0.1
+ */
 @YukiHookLibXposedEntry(
     targetApiVersion = 101,
     scope = ["com.android.systemui"],

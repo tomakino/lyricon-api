@@ -15,7 +15,11 @@ import android.os.Build
 import io.github.proify.lyricon.subscriber.internal.LyriconSubscriberImpl
 import io.github.proify.lyricon.subscriber.internal.registration.CentralBootReceiver
 
-/** 创建 [LyriconSubscriber] 的工厂。 */
+/**
+ * 创建 [LyriconSubscriber] 的工厂。
+ *
+ * @since 0.1.80
+ */
 object LyriconFactory {
 
     /**

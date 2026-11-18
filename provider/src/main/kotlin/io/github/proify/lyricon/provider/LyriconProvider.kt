@@ -13,6 +13,8 @@ import io.github.proify.lyricon.provider.service.RemoteService
  *
  * 提供端负责把播放器状态、歌曲和歌词显示配置发送给中心服务。实例通常由
  * [LyriconFactory.createProvider] 创建。
+ *
+ * @since 0.1.80
  */
 interface LyriconProvider {
     /** 注册到中心服务时上报的提供端信息。 */
@@ -30,12 +32,24 @@ interface LyriconProvider {
     /** 暴露给中心服务调用的本地命令处理器。 */
     var providerService: ProviderService?
 
-    /** 向中心服务发送注册请求。 */
+    /**
+     * 向中心服务发送注册请求。
+     *
+     * @return 是否发起了新的注册；已连接、正在连接、已销毁或中心包名为空时为 `false`
+     */
     fun register(): Boolean
 
-    /** 主动断开当前中心服务连接。 */
+    /**
+     * 主动断开当前中心服务连接。
+     *
+     * @return 是否执行了断开；已销毁时为 `false`
+     */
     fun unregister(): Boolean
 
-    /** 释放监听器、注册回调和远端连接资源。 */
+    /**
+     * 释放监听器、注册回调和远端连接资源。
+     *
+     * @return 首次销毁返回 `true`；重复调用返回 `false`
+     */
     fun destroy(): Boolean
 }

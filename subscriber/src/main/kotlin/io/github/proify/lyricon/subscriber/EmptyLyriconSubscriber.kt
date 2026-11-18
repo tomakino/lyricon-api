@@ -6,7 +6,11 @@
 
 package io.github.proify.lyricon.subscriber
 
-/** 不支持当前运行环境时返回的订阅端空实现。 */
+/**
+ * 不支持当前运行环境时返回的订阅端空实现。
+ *
+ * @since 0.1.80
+ */
 class EmptyLyriconSubscriber(
     override val subscriberInfo: SubscriberInfo
 ) : LyriconSubscriber {

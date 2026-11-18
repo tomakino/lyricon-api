@@ -14,6 +14,8 @@ import android.os.Bundle
  *
  * 中心服务可通过该接口向提供端发起扩展命令。当前核心歌词同步流程不依赖该接口，
  * 它主要用于后续能力扩展。
+ *
+ * @since 0.1.80
  */
 interface ProviderService {
 

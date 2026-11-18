@@ -11,6 +11,8 @@ package io.github.proify.lyricon.subscriber
  *
  * 订阅端用于注册到中心服务，监听当前活跃播放器变化，并接收连接生命周期回调。
  * 实例通常由 [LyriconFactory.createSubscriber] 创建。
+ *
+ * @since 0.1.80
  */
 interface LyriconSubscriber {
     /** 注册到中心服务时上报的订阅端信息。 */
@@ -22,10 +24,18 @@ interface LyriconSubscriber {
     /** 移除之前添加的连接生命周期监听器。 */
     fun removeConnectionListener(listener: ConnectionListener)
 
-    /** 订阅当前活跃播放器状态。 */
+    /**
+     * 订阅当前活跃播放器状态。
+     *
+     * @return 是否新注册；同一监听器重复注册时为 `false`
+     */
     fun subscribeActivePlayer(listener: ActivePlayerListener): Boolean
 
-    /** 取消 [listener] 对当前活跃播放器状态的订阅。 */
+    /**
+     * 取消 [listener] 对当前活跃播放器状态的订阅。
+     *
+     * @return 是否移除了已注册的监听器
+     */
     fun unsubscribeActivePlayer(listener: ActivePlayerListener): Boolean
 
     /** 向中心服务发送注册请求。 */

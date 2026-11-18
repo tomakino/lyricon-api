@@ -15,6 +15,7 @@ import kotlinx.serialization.Serializable
  * 用键值对携带额外展示或能力信息。该类型委托实现 [Map]，可直接按普通 Map 读取。
  *
  * @property map 元数据键值对。
+ * @since 0.1.80
  */
 @Serializable
 class ProviderMetadata(

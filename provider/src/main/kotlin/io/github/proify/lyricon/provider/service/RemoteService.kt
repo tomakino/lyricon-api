@@ -11,7 +11,11 @@ import io.github.proify.lyricon.provider.ConnectionStatus
 import io.github.proify.lyricon.provider.LyriconProvider
 import io.github.proify.lyricon.provider.RemotePlayer
 
-/** 提供端连接中心服务后的远端服务入口。 */
+/**
+ * 提供端连接中心服务后的远端服务入口。
+ *
+ * @since 0.1.80
+ */
 interface RemoteService {
 
     /** 播放器状态发送接口。 */

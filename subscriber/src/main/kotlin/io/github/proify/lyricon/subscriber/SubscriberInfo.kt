@@ -17,6 +17,7 @@ import kotlinx.serialization.Serializable
  *
  * @property packageName 订阅端应用包名。
  * @property processName 订阅端所在进程名。
+ * @since 0.1.80
  */
 @Serializable
 @Parcelize

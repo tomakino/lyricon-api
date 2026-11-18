@@ -15,6 +15,8 @@ import io.github.proify.lyricon.lyric.model.Song
  * 远端播放器状态发送接口。
  *
  * 提供端通过该接口把歌曲、播放状态、播放位置和歌词显示配置同步给中心服务。
+ *
+ * @since 0.1.80
  */
 interface RemotePlayer {
 
@@ -100,6 +102,7 @@ interface RemotePlayer {
      * 使用 [PlaybackState] 同步播放状态。
      *
      * 中心服务可根据 [PlaybackState.position]、播放速度和更新时间计算实时进度。
+     * 与 [setPlaybackState]（`Boolean` 重载）互斥：最后调用的重载决定同步模式。
      *
      * @param state 播放状态，传入 null 表示停止使用该模式。
      * @return 命令是否成功发送。

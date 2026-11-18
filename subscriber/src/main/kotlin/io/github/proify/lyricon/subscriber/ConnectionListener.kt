@@ -9,6 +9,8 @@ package io.github.proify.lyricon.subscriber
 /**
  * 服务连接状态监听器。
  * 用于接收订阅者与远程服务之间连接生命周期的状态变更回调。
+ *
+ * @since 0.1.80
  */
 interface ConnectionListener {
     /**

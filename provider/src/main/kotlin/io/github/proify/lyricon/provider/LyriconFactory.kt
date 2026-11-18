@@ -13,7 +13,11 @@ import android.os.Build
 import io.github.proify.lyricon.provider.internal.LyriconProviderImpl
 import io.github.proify.lyricon.provider.internal.registration.CentralBootReceiver
 
-/** 创建 [LyriconProvider] 的工厂。 */
+/**
+ * 创建 [LyriconProvider] 的工厂。
+ *
+ * @since 0.1.80
+ */
 object LyriconFactory {
 
     /**
@@ -29,6 +33,7 @@ object LyriconFactory {
      * @param processName 播放器进程名，默认读取当前进程名。
      * @param providerService 暴露给中心服务调用的本地命令处理器。
      * @param centralPackageName 中心服务所在包名。
+     * @return 可用于注册中心服务的提供端实例；Android 8.1 以下为空实现
      */
     fun createProvider(
         context: Context,

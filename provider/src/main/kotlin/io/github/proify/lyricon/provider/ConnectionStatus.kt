@@ -8,7 +8,11 @@
 
 package io.github.proify.lyricon.provider
 
-/** 提供端与中心服务之间的连接状态。 */
+/**
+ * 提供端与中心服务之间的连接状态。
+ *
+ * @since 0.1.80
+ */
 enum class ConnectionStatus {
     /** 未连接或被内部替换连接。 */
     DISCONNECTED,

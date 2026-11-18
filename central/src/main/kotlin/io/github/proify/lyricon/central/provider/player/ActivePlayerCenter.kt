@@ -13,6 +13,8 @@ import io.github.proify.lyricon.central.CentralRuntime
  *
  * 委托给中央运行时的活跃播放器中枢，供监听方（如本地中心应用）
  * 注册/注销 [ActivePlayerListener]。
+ *
+ * @since 1.0.1
  */
 object ActivePlayerCenter {
 

@@ -12,6 +12,8 @@ import io.github.proify.lyricon.lyric.model.Song
  * [ActivePlayerListener] 的空实现适配器。
  *
  * 只关心部分事件时可实现该接口并覆写需要的方法，避免写出所有回调。
+ *
+ * @since 0.1.80
  */
 @Suppress("unused")
 interface SimpleActivePlayerListener : ActivePlayerListener {
