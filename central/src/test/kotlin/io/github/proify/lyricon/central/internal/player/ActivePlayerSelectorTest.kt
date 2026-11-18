@@ -109,7 +109,8 @@ class ActivePlayerSelectorTest {
         val selector = ActivePlayerSelector()
         selector.decide(session("a", playing = false))
 
-        val decision = selector.decide(session("b", playing = true), allowDuplicateIfSwitching = false)
+        val decision =
+            selector.decide(session("b", playing = true), allowDuplicateIfSwitching = false)
 
         assertTrue(decision is ActivePlayerDecision.Switch)
         assertFalse((decision as ActivePlayerDecision.Switch).broadcastOriginal)

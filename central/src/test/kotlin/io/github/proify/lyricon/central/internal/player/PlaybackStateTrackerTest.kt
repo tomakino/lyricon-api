@@ -127,7 +127,12 @@ class PlaybackStateTrackerTest {
     @Test
     fun drivingWithoutStateFallsBackToZero() {
         val tracker = tracker(FakeClock())
-        tracker.usePlaybackState(playing = true, position = 0L, lastUpdateTime = 0L, playbackSpeed = 1.0f)
+        tracker.usePlaybackState(
+            playing = true,
+            position = 0L,
+            lastUpdateTime = 0L,
+            playbackSpeed = 1.0f
+        )
 
         assertEquals(0L, tracker.computePosition())
     }
@@ -285,7 +290,12 @@ class PlaybackStateTrackerTest {
     fun manualModeSwitchReturnsToReader() {
         val clock = FakeClock()
         val tracker = tracker(clock, manual = { 8_888L })
-        tracker.usePlaybackState(playing = true, position = 1_000L, lastUpdateTime = 100L, playbackSpeed = 1.0f)
+        tracker.usePlaybackState(
+            playing = true,
+            position = 1_000L,
+            lastUpdateTime = 100L,
+            playbackSpeed = 1.0f
+        )
 
         tracker.useManualMode()
 
@@ -299,7 +309,12 @@ class PlaybackStateTrackerTest {
 
         assertFalse(tracker.stopDriving())
 
-        tracker.usePlaybackState(playing = true, position = 1_000L, lastUpdateTime = 100L, playbackSpeed = 1.0f)
+        tracker.usePlaybackState(
+            playing = true,
+            position = 1_000L,
+            lastUpdateTime = 100L,
+            playbackSpeed = 1.0f
+        )
         assertTrue(tracker.stopDriving())
         assertFalse(tracker.isStateDriven)
     }

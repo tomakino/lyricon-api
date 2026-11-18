@@ -10,8 +10,8 @@ import android.media.session.PlaybackState
 import android.os.SharedMemory
 import android.util.Log
 import io.github.proify.lyricon.central.internal.player.PlaybackStateTracker
-import io.github.proify.lyricon.central.internal.player.PlayerSession
 import io.github.proify.lyricon.central.internal.player.PlayerListener
+import io.github.proify.lyricon.central.internal.player.PlayerSession
 import io.github.proify.lyricon.central.internal.player.PositionMemoryChannel
 import io.github.proify.lyricon.central.internal.player.PositionTicker
 import io.github.proify.lyricon.central.internal.util.ScreenStateMonitor

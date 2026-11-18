@@ -27,12 +27,15 @@ private var blackhole = 0L
 
 private class TimingBridge(private val nav: TimingNavigator<LyricLine>) : Firstable, ForEachable {
     override fun first(position: Long): LyricLine? = nav.first(position)
-    override fun forEachAt(position: Long, action: (LyricLine) -> Unit): Int = nav.forEachAt(position, action)
+    override fun forEachAt(position: Long, action: (LyricLine) -> Unit): Int =
+        nav.forEachAt(position, action)
 }
 
-private class TimingBridgeV1(private val nav: TimingNavigatorV1<LyricLine>) : Firstable, ForEachable {
+private class TimingBridgeV1(private val nav: TimingNavigatorV1<LyricLine>) : Firstable,
+    ForEachable {
     override fun first(position: Long): LyricLine? = nav.first(position)
-    override fun forEachAt(position: Long, action: (LyricLine) -> Unit): Int = nav.forEachAt(position, action)
+    override fun forEachAt(position: Long, action: (LyricLine) -> Unit): Int =
+        nav.forEachAt(position, action)
 }
 
 private class Scheme(
@@ -45,20 +48,58 @@ private class Scheme(
 )
 
 private val schemes = listOf(
-    Scheme("linear", "线性扫描", "从头扫描 + 早停 · O(N) 基线, 语义完整", true,
-        { LinearNavigator(it) }, "O(1) 辅助内存"),
-    Scheme("binary", "纯二分", "定位锚点(最后一条 begin≤pos)后只查锚点 · O(log N), 无重叠处理无缓存", false,
-        { BinaryNavigator(it) }, "O(1) 辅助内存"),
-    Scheme("cursor", "游标推进", "顺序游标推进 + 二分回退, 用最大时长窗口回溯解决重叠 · 无前缀表", true,
-        { CursorNavigator(it) }, "IntArray(4N) 窗口缓冲"),
-    Scheme("treemap", "TreeMap 红黑树", "标准库 NavigableMap: floorEntry + lowerEntry 窗口回溯(每步 O(log N))", true,
-        { TreeMapNavigator(it) }, "红黑树结点约 80B/条"),
-    Scheme("interval", "区间树", "按 begin 折叠构建平衡树, 结点存子树最大结束时间, 查询含点区间", true,
-        { IntervalTreeNavigator(it) }, "3 数组共 16N + IntArray(4N)"),
-    Scheme("timing-v1", "TimingNavigator v1·优化前", "基线: 缓存二分 + 步进探测 + maxEndSoFar 前缀表(每次重叠解析做完整二分)", true,
-        { TimingBridgeV1(TimingNavigatorV1(it)) }, "LongArray(8N) 前缀表"),
-    Scheme("timing", "TimingNavigator v2·优化后", "无重叠快路径 + maxEndSoFar O(1) 短路 + 顺序播放滑动 start 缓存 + 指数探测 + 大跳二分门控 + 冗余判断消除", true,
-        { TimingBridge(TimingNavigator(it)) }, "LongArray(8N) 前缀表")
+    Scheme(
+        "linear", "线性扫描", "从头扫描 + 早停 · O(N) 基线, 语义完整", true,
+        { LinearNavigator(it) }, "O(1) 辅助内存"
+    ),
+    Scheme(
+        "binary",
+        "纯二分",
+        "定位锚点(最后一条 begin≤pos)后只查锚点 · O(log N), 无重叠处理无缓存",
+        false,
+        { BinaryNavigator(it) },
+        "O(1) 辅助内存"
+    ),
+    Scheme(
+        "cursor",
+        "游标推进",
+        "顺序游标推进 + 二分回退, 用最大时长窗口回溯解决重叠 · 无前缀表",
+        true,
+        { CursorNavigator(it) },
+        "IntArray(4N) 窗口缓冲"
+    ),
+    Scheme(
+        "treemap",
+        "TreeMap 红黑树",
+        "标准库 NavigableMap: floorEntry + lowerEntry 窗口回溯(每步 O(log N))",
+        true,
+        { TreeMapNavigator(it) },
+        "红黑树结点约 80B/条"
+    ),
+    Scheme(
+        "interval",
+        "区间树",
+        "按 begin 折叠构建平衡树, 结点存子树最大结束时间, 查询含点区间",
+        true,
+        { IntervalTreeNavigator(it) },
+        "3 数组共 16N + IntArray(4N)"
+    ),
+    Scheme(
+        "timing-v1",
+        "TimingNavigator v1·优化前",
+        "基线: 缓存二分 + 步进探测 + maxEndSoFar 前缀表(每次重叠解析做完整二分)",
+        true,
+        { TimingBridgeV1(TimingNavigatorV1(it)) },
+        "LongArray(8N) 前缀表"
+    ),
+    Scheme(
+        "timing",
+        "TimingNavigator v2·优化后",
+        "无重叠快路径 + maxEndSoFar O(1) 短路 + 顺序播放滑动 start 缓存 + 指数探测 + 大跳二分门控 + 冗余判断消除",
+        true,
+        { TimingBridge(TimingNavigator(it)) },
+        "LongArray(8N) 前缀表"
+    )
 )
 
 private class ScenarioDef(
@@ -104,14 +145,62 @@ private fun buildUneven(n: Int): Array<LyricLine> {
 }
 
 private val scenarios = listOf(
-    ScenarioDef("std-300", "标准 LRC · 300 行", "std", "每行 800ms, 间隔 200ms, 无重叠", buildStd(300)),
-    ScenarioDef("std-1200", "标准 LRC · 1.2K 行", "std", "每行 800ms, 间隔 200ms, 无重叠", buildStd(1200)),
-    ScenarioDef("std-6000", "标准 LRC · 6K 行", "std", "每行 800ms, 间隔 200ms, 无重叠", buildStd(6000)),
-    ScenarioDef("std-60000", "标准 LRC · 60K 行", "std", "每行 800ms, 间隔 200ms, 无重叠", buildStd(60000)),
-    ScenarioDef("ov4-6000", "密集重叠 · 6K 行", "overlap", "每行 4s, 1s 一条, 平均 ~4 行并发", buildOv4(6000)),
-    ScenarioDef("ov9-6000", "极密重叠 · 6K 行", "overlap", "每行 9s, 1s 一条, 平均 ~9 行并发", buildOv9(6000)),
-    ScenarioDef("uneven-6000", "长短句混杂 · 6K 行", "overlap", "时长 1~11s 伪随机, 间距 35%, 并发不规则", buildUneven(6000)),
-    ScenarioDef("ov9-60000", "极密重叠 · 60K 行", "overlap", "每行 9s, 1s 一条, 平均 ~9 行并发", buildOv9(60000))
+    ScenarioDef(
+        "std-300",
+        "标准 LRC · 300 行",
+        "std",
+        "每行 800ms, 间隔 200ms, 无重叠",
+        buildStd(300)
+    ),
+    ScenarioDef(
+        "std-1200",
+        "标准 LRC · 1.2K 行",
+        "std",
+        "每行 800ms, 间隔 200ms, 无重叠",
+        buildStd(1200)
+    ),
+    ScenarioDef(
+        "std-6000",
+        "标准 LRC · 6K 行",
+        "std",
+        "每行 800ms, 间隔 200ms, 无重叠",
+        buildStd(6000)
+    ),
+    ScenarioDef(
+        "std-60000",
+        "标准 LRC · 60K 行",
+        "std",
+        "每行 800ms, 间隔 200ms, 无重叠",
+        buildStd(60000)
+    ),
+    ScenarioDef(
+        "ov4-6000",
+        "密集重叠 · 6K 行",
+        "overlap",
+        "每行 4s, 1s 一条, 平均 ~4 行并发",
+        buildOv4(6000)
+    ),
+    ScenarioDef(
+        "ov9-6000",
+        "极密重叠 · 6K 行",
+        "overlap",
+        "每行 9s, 1s 一条, 平均 ~9 行并发",
+        buildOv9(6000)
+    ),
+    ScenarioDef(
+        "uneven-6000",
+        "长短句混杂 · 6K 行",
+        "overlap",
+        "时长 1~11s 伪随机, 间距 35%, 并发不规则",
+        buildUneven(6000)
+    ),
+    ScenarioDef(
+        "ov9-60000",
+        "极密重叠 · 60K 行",
+        "overlap",
+        "每行 9s, 1s 一条, 平均 ~9 行并发",
+        buildOv9(60000)
+    )
 )
 
 private enum class PatternId(val id: String, val label: String, val desc: String) {
@@ -129,6 +218,7 @@ private fun buildQueries(sc: ScenarioDef, pattern: PatternId, nOps: Int): LongAr
         state = state * 6364136223846793005UL + 1442695040888963407UL
         return Math.floorMod((state shr 1).toLong(), max)
     }
+
     var pos = 0L
     when (pattern) {
         PatternId.SEQ -> {
@@ -140,12 +230,16 @@ private fun buildQueries(sc: ScenarioDef, pattern: PatternId, nOps: Int): LongAr
             for (s in 0 until segs) {
                 val base = span * s
                 val cnt = if (s == segs - 1) nOps - per * (segs - 1) else per
-                for (j in 0 until cnt) { arr[k++] = Math.min(base + j * 16L, end) }
+                for (j in 0 until cnt) {
+                    arr[k++] = Math.min(base + j * 16L, end)
+                }
             }
         }
+
         PatternId.RAND -> {
             for (k in 0 until nOps) arr[k] = rnd(end + 1L)
         }
+
         PatternId.SCRUB -> {
             pos = rnd(end + 1L)
             for (k in 0 until nOps) {
@@ -154,6 +248,7 @@ private fun buildQueries(sc: ScenarioDef, pattern: PatternId, nOps: Int): LongAr
                 arr[k] = pos
             }
         }
+
         PatternId.MIXED -> {
             for (k in 0 until nOps) {
                 val r = rnd(100L)
@@ -166,15 +261,23 @@ private fun buildQueries(sc: ScenarioDef, pattern: PatternId, nOps: Int): LongAr
 }
 
 private enum class OpsMode { FIRST, FOR_EACH }
+
 private const val WARM_BATCHES = 12
 private const val MEASURE_BATCHES = 21
 private const val N_LOOP_LIMIT = 40_000_000L
 
 private fun nOpsFor(n: Int): Int = (N_LOOP_LIMIT / n).coerceIn(2_000L, 120_000L).toInt()
 
-private class Operand { var v = 0L }
+private class Operand {
+    var v = 0L
+}
 
-private class Timings(val nsMedian: Double, val nsP90: Double, val nsMin: Double, val allocPerOp: Double)
+private class Timings(
+    val nsMedian: Double,
+    val nsP90: Double,
+    val nsMin: Double,
+    val allocPerOp: Double
+)
 
 private fun runFirstBatch(instance: Firstable, queries: LongArray): Long {
     var cs = 0L
@@ -202,7 +305,9 @@ private fun measureCell(
         else {
             val fe = instance as ForEachable
             var i = 0
-            while (i < ops) { fe.forEachAt(queries[i], action); i++ }
+            while (i < ops) {
+                fe.forEachAt(queries[i], action); i++
+            }
             h.v
         }
     }
@@ -245,7 +350,9 @@ private fun upperBoundIdx(src: Array<LyricLine>, position: Long): Int {
     var ans = -1
     while (low <= high) {
         val mid = (low + high) ushr 1
-        if (src[mid].begin <= position) { ans = mid; low = mid + 1 } else high = mid - 1
+        if (src[mid].begin <= position) {
+            ans = mid; low = mid + 1
+        } else high = mid - 1
     }
     return ans
 }
@@ -266,6 +373,7 @@ private fun buildGroundTruth(sc: ScenarioDef, probes: Int = 1600): GroundTruth {
         state = state * 6364136223846793005UL + 1442695040888963407UL
         return Math.floorMod((state shr 1).toLong(), max)
     }
+
     val posList = ArrayList<Long>(probes + 400)
     val step = (n / 240).coerceAtLeast(1)
     var i = 0
@@ -290,7 +398,9 @@ private fun buildGroundTruth(sc: ScenarioDef, probes: Int = 1600): GroundTruth {
         for (j in 0 until n) {
             val e = src[j]
             if (e.begin > pos) break
-            if (pos <= e.end) { cnt++; if (best < 0) best = j }
+            if (pos <= e.end) {
+                cnt++; if (best < 0) best = j
+            }
         }
         earliest[k] = best
         activeCount[k] = cnt
@@ -306,12 +416,18 @@ private fun indexOfBegin(src: Array<LyricLine>, begin: Long): Int {
     var ans = -1
     while (lo <= hi) {
         val mid = (lo + hi) ushr 1
-        if (src[mid].begin <= begin) { ans = mid; lo = mid + 1 } else hi = mid - 1
+        if (src[mid].begin <= begin) {
+            ans = mid; lo = mid + 1
+        } else hi = mid - 1
     }
     return ans
 }
 
-private fun correctnessFirst(scheme: Scheme, sc: ScenarioDef, gt: GroundTruth): Pair<Double, Double> {
+private fun correctnessFirst(
+    scheme: Scheme,
+    sc: ScenarioDef,
+    gt: GroundTruth
+): Pair<Double, Double> {
     val inst = scheme.create(sc.source)
     var early = 0
     var anch = 0
@@ -348,7 +464,9 @@ private fun correctnessForEach(scheme: Scheme, sc: ScenarioDef, gt: GroundTruth)
                 val e = sc.source[j]
                 if (e.begin > pos) break
                 if (pos <= e.end) {
-                    if (cnt < got.size && got[cnt].begin == e.begin) cnt++ else { same = false; break }
+                    if (cnt < got.size && got[cnt].begin == e.begin) cnt++ else {
+                        same = false; break
+                    }
                 }
             }
             if (cnt != got.size) same = false
@@ -457,6 +575,7 @@ fun main(args: Array<String>) {
         val s = v.sorted()
         return s[s.size / 2]
     }
+
     val buildSrcs = listOf(
         "std-60000" to buildStd(60000),
         "ov9-60000" to buildOv9(60000)
@@ -493,7 +612,8 @@ fun main(args: Array<String>) {
             }
         }
         // forEachAt 模式
-        val feScenarios = scenarios.filter { it.id in setOf("ov4-6000", "ov9-6000", "uneven-6000", "std-6000") }
+        val feScenarios =
+            scenarios.filter { it.id in setOf("ov4-6000", "ov9-6000", "uneven-6000", "std-6000") }
         for (sc in feScenarios) {
             for (pat in listOf(PatternId.SEQ, PatternId.RAND, PatternId.MIXED)) {
                 val nOps = nOpsFor(sc.n)
@@ -544,7 +664,13 @@ fun main(args: Array<String>) {
         }
         firstResults[key] = per
         val tv = per["timing"]
-        println("  first ${key}: v1=${"%.1f".format(per["timing-v1"]?.timings?.nsMedian ?: 0.0)} v2=${"%.1f".format(tv?.timings?.nsMedian ?: 0.0)} ns/op  correct=${"%.1f%%".format((tv?.correctEarliest ?: 0.0) * 100)}")
+        println(
+            "  first ${key}: v1=${"%.1f".format(per["timing-v1"]?.timings?.nsMedian ?: 0.0)} v2=${
+                "%.1f".format(
+                    tv?.timings?.nsMedian ?: 0.0
+                )
+            } ns/op  correct=${"%.1f%%".format((tv?.correctEarliest ?: 0.0) * 100)}"
+        )
     }
 
     val forEachResults = LinkedHashMap<String, LinkedHashMap<String, ForEachResult>>()
@@ -563,7 +689,13 @@ fun main(args: Array<String>) {
             )
         }
         forEachResults[key] = per
-        println("  fe ${key}: v1=${"%.1f".format(per["timing-v1"]?.timings?.nsMedian ?: 0.0)} v2=${"%.1f".format(per["timing"]?.timings?.nsMedian ?: 0.0)} ns/op  correct=${"%.1f%%".format((per["timing"]?.correct ?: 0.0) * 100)}")
+        println(
+            "  fe ${key}: v1=${"%.1f".format(per["timing-v1"]?.timings?.nsMedian ?: 0.0)} v2=${
+                "%.1f".format(
+                    per["timing"]?.timings?.nsMedian ?: 0.0
+                )
+            } ns/op  correct=${"%.1f%%".format((per["timing"]?.correct ?: 0.0) * 100)}"
+        )
     }
 
     // 组装 JSON
@@ -571,8 +703,18 @@ fun main(args: Array<String>) {
         put("meta", buildJsonObject {
             put("title", "TimingNavigator 性能跑分报告")
             put("generatedAt", System.currentTimeMillis())
-            put("jvm", "${System.getProperty("java.vm.name")} ${System.getProperty("java.version")} (${System.getProperty("java.vm.version")})")
-            put("os", "${System.getProperty("os.name")} ${System.getProperty("os.version")} ${System.getProperty("os.arch")}")
+            put(
+                "jvm",
+                "${System.getProperty("java.vm.name")} ${System.getProperty("java.version")} (${
+                    System.getProperty("java.vm.version")
+                })"
+            )
+            put(
+                "os",
+                "${System.getProperty("os.name")} ${System.getProperty("os.version")} ${
+                    System.getProperty("os.arch")
+                }"
+            )
             put("cpu", cpu)
             put("cores", Runtime.getRuntime().availableProcessors())
             put("warmBatches", WARM_BATCHES)

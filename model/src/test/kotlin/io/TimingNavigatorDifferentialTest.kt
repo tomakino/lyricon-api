@@ -154,10 +154,19 @@ class TimingNavigatorDifferentialTest {
 
                 // forEachAtOrPrevious 复用 forEachAt 刚写入的锚点缓存，必须紧随其后校验
                 val actualOrPrevious = ArrayList<LyricLine>()
-                val orPreviousCount = navigator.forEachAtOrPrevious(position) { actualOrPrevious.add(it) }
+                val orPreviousCount =
+                    navigator.forEachAtOrPrevious(position) { actualOrPrevious.add(it) }
                 val expectedOrPrevious = naiveAtOrPrevious(lines, position)
-                assertEquals("$tag forEachAtOrPrevious() 数量", expectedOrPrevious.size, orPreviousCount)
-                assertEquals("$tag forEachAtOrPrevious() 内容", expectedOrPrevious, actualOrPrevious)
+                assertEquals(
+                    "$tag forEachAtOrPrevious() 数量",
+                    expectedOrPrevious.size,
+                    orPreviousCount
+                )
+                assertEquals(
+                    "$tag forEachAtOrPrevious() 内容",
+                    expectedOrPrevious,
+                    actualOrPrevious
+                )
             }
         }
     }

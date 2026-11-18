@@ -11,11 +11,11 @@ import android.os.Build
 import android.os.SharedMemory
 import android.util.Log
 import androidx.annotation.RequiresApi
+import io.github.proify.lyricon.core.wire.deflate
+import io.github.proify.lyricon.core.wire.wireJson
 import io.github.proify.lyricon.lyric.model.Song
 import io.github.proify.lyricon.provider.IRemotePlayer
 import io.github.proify.lyricon.provider.RemotePlayer
-import io.github.proify.lyricon.core.wire.deflate
-import io.github.proify.lyricon.core.wire.wireJson
 import java.nio.ByteBuffer
 
 /**
@@ -78,9 +78,7 @@ internal class AidlRemotePlayer : RemotePlayer {
     }
 
     override fun setPosition(position: Long): Boolean {
-        if (!isSendingEnabled) return false
-
-        return try {
+        return isSendingEnabled && try {
             positionBuffer?.putLong(0, position.coerceAtLeast(0L))
             true
         } catch (e: Exception) {
@@ -116,9 +114,7 @@ internal class AidlRemotePlayer : RemotePlayer {
      */
     private inline fun send(block: IRemotePlayer.() -> Unit): Boolean {
         val player = remotePlayer
-        if (!isSendingEnabled || player == null) return false
-
-        return try {
+        return !(!isSendingEnabled || player == null) && try {
             block(player)
             true
         } catch (it: Exception) {

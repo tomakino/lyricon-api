@@ -37,9 +37,9 @@ mavenPublishing {
 
     pom {
         name.set("model")
-        description.set("model")
+        description.set("Lyricon lyric model")
         inceptionYear.set("2026")
-        url.set("https://github.com/proify/lyricon")
+        url.set("https://github.com/tomakino/lyricon-api")
         licenses {
             license {
                 name.set("The Apache License, Version 2.0")
@@ -49,15 +49,15 @@ mavenPublishing {
         }
         developers {
             developer {
-                id.set("Proify")
-                name.set("Proify")
-                url.set("https://github.com/proify")
+                id.set("tomakino")
+                name.set("tomakino")
+                url.set("https://github.com/tomakino")
             }
         }
         scm {
-            url.set("https://github.com/proify/lyricon")
-            connection.set("scm:git:git://github.com/proify/lyricon.git")
-            developerConnection.set("scm:git:ssh://git@github.com/proify/lyricon.git")
+            url.set("https://github.com/tomakino/lyricon-api")
+            connection.set("scm:git:git://github.com/tomakino/lyricon-api.git")
+            developerConnection.set("scm:git:ssh://git@github.com/tomakino/lyricon-api.git")
         }
     }
     publishToMavenCentral()

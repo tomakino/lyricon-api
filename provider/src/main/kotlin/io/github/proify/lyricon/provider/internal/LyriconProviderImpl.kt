@@ -84,8 +84,7 @@ internal class LyriconProviderImpl(
     }
 
     override fun register(): Boolean {
-        if (destroyed.get()) return false
-        return registration.start(manual = true)
+        return !destroyed.get() && registration.start(manual = true)
     }
 
     override fun unregister(): Boolean {

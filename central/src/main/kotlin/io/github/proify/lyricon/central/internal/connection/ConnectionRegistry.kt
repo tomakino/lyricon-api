@@ -14,7 +14,7 @@ import java.util.concurrent.ConcurrentHashMap
  * @property K 连接身份类型。
  * @property C 连接类型。
  */
-internal class ConnectionRegistry<K, C : RemoteConnection<K>> {
+internal class ConnectionRegistry<K : Any, C : RemoteConnection<K>> {
 
     private val connections = ConcurrentHashMap<K, C>()
 

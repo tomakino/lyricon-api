@@ -82,8 +82,7 @@ internal class ProviderLink(
      * 发送注册广播，避免破坏现有连接。
      */
     fun beginRegistration(): Boolean {
-        if (!machine.status.isDisconnected()) return false
-        return transition(ConnectionTrigger.REGISTER).status == ConnectionStatus.CONNECTING
+        return machine.status.isDisconnected() && transition(ConnectionTrigger.REGISTER).status == ConnectionStatus.CONNECTING
     }
 
     /** 注册等待超时。 */
@@ -175,12 +174,12 @@ internal class ProviderLink(
         ConnectionTrigger.PREEMPT,
         ConnectionTrigger.SERVICE_LOST,
         ConnectionTrigger.USER_DISCONNECT,
-        -> true
+            -> true
 
         ConnectionTrigger.REGISTER,
         ConnectionTrigger.REGISTRATION_TIMEOUT,
         ConnectionTrigger.SERVICE_READY,
-        -> false
+            -> false
     }
 
     /** 解除死亡监听并断开远端服务（幂等）。 */

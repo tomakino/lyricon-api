@@ -29,4 +29,5 @@ include(":provider")
 include(":subscriber")
 include(":centralapp")
 include(":model")
-include(":core")
+
+include(":contract")

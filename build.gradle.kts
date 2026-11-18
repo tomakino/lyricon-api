@@ -11,7 +11,7 @@ plugins {
 extra["compileSdkVersion"] = 37
 extra["targetSdkVersion"] = 37
 
-extra["coreVersion"] = "0.1.80"
-extra["providerSdkVersion"] = "0.1.80"
-extra["subscriberSdkVersion"] = "0.1.80"
-extra["lyricModelVersion"] = "0.1.80"
+extra["contractVersion"] = "0.1.85"
+extra["providerSdkVersion"] = "0.1.85"
+extra["subscriberSdkVersion"] = "0.1.85"
+extra["lyricModelVersion"] = "0.1.85"

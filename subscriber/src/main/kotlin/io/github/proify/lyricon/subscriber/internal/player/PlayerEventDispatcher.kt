@@ -10,11 +10,11 @@ import android.os.Build
 import android.os.SharedMemory
 import android.util.Log
 import androidx.annotation.RequiresApi
+import io.github.proify.lyricon.core.wire.wireJson
 import io.github.proify.lyricon.lyric.model.Song
 import io.github.proify.lyricon.subscriber.ActivePlayerListener
 import io.github.proify.lyricon.subscriber.IActivePlayerListener
 import io.github.proify.lyricon.subscriber.ProviderInfo
-import io.github.proify.lyricon.core.wire.wireJson
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job

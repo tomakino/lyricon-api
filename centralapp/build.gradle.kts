@@ -69,7 +69,6 @@ dependencies {
     implementation(libs.yukihook.extension.kavaref)
     implementation(libs.yukihook.runtime.libxposed)
 
-
     implementation(project(":central"))
     implementation(libs.androidx.core.ktx)
 

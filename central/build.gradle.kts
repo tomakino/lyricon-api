@@ -10,7 +10,7 @@ configure<LibraryExtension> {
         version = release(rootProject.extra.get("compileSdkVersion") as Int)
     }
     defaultConfig {
-        minSdk = 21
+        minSdk = 29
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles("consumer-rules.pro")
@@ -33,7 +33,7 @@ configure<LibraryExtension> {
 }
 
 dependencies {
-    implementation(project(":core"))
+    api(project(":contract"))
     api(project(":provider"))
     api(project(":subscriber"))
 

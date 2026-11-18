@@ -7,7 +7,6 @@
 package io.github.proify.lyricon.provider.internal.connection
 
 import io.github.proify.lyricon.provider.ConnectionStatus
-import io.github.proify.lyricon.provider.isConnected
 import io.github.proify.lyricon.provider.internal.connection.ConnectionEvent.CONNECTED
 import io.github.proify.lyricon.provider.internal.connection.ConnectionEvent.CONNECT_TIMEOUT
 import io.github.proify.lyricon.provider.internal.connection.ConnectionEvent.DISCONNECTED
@@ -18,6 +17,7 @@ import io.github.proify.lyricon.provider.internal.connection.ConnectionTrigger.R
 import io.github.proify.lyricon.provider.internal.connection.ConnectionTrigger.SERVICE_LOST
 import io.github.proify.lyricon.provider.internal.connection.ConnectionTrigger.SERVICE_READY
 import io.github.proify.lyricon.provider.internal.connection.ConnectionTrigger.USER_DISCONNECT
+import io.github.proify.lyricon.provider.isConnected
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull

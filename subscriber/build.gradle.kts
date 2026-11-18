@@ -1,5 +1,3 @@
-import org.gradle.kotlin.dsl.signing
-
 plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.kotlin.serialization)
@@ -44,7 +42,7 @@ android {
 }
 
 dependencies {
-    api(project(":core"))
+    api(project(":contract"))
     api(project(":model"))
     api(libs.kotlinx.serialization.json)
     api(libs.androidx.core.ktx)
@@ -66,8 +64,8 @@ mavenPublishing {
     pom {
         name.set("subscriber")
         description.set("Lyric Subscription Service")
-        inceptionYear.set("2025")
-        url.set("https://github.com/proify/lyricon")
+        inceptionYear.set("2026")
+        url.set("https://github.com/tomakino/lyricon-api")
         licenses {
             license {
                 name.set("The Apache License, Version 2.0")
@@ -77,15 +75,15 @@ mavenPublishing {
         }
         developers {
             developer {
-                id.set("Proify")
-                name.set("Proify")
-                url.set("https://github.com/proify")
+                id.set("tomakino")
+                name.set("tomakino")
+                url.set("https://github.com/tomakino")
             }
         }
         scm {
-            url.set("https://github.com/proify/lyricon")
-            connection.set("scm:git:git://github.com/proify/lyricon.git")
-            developerConnection.set("scm:git:ssh://git@github.com/proify/lyricon.git")
+            url.set("https://github.com/tomakino/lyricon-api")
+            connection.set("scm:git:git://github.com/tomakino/lyricon-api.git")
+            developerConnection.set("scm:git:ssh://git@github.com/tomakino/lyricon-api.git")
         }
     }
     publishToMavenCentral()

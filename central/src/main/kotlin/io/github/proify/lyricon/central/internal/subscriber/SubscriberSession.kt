@@ -10,8 +10,8 @@ import android.os.SharedMemory
 import android.system.OsConstants
 import android.util.Log
 import io.github.proify.lyricon.central.internal.wire.SongPayloadCache
-import io.github.proify.lyricon.core.wire.wireJson
 import io.github.proify.lyricon.central.provider.player.ActivePlayerListener
+import io.github.proify.lyricon.core.wire.wireJson
 import io.github.proify.lyricon.lyric.model.Song
 import io.github.proify.lyricon.provider.ProviderInfo
 import io.github.proify.lyricon.subscriber.IActivePlayerListener

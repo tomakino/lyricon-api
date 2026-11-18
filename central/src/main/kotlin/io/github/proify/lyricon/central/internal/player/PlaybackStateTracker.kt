@@ -135,12 +135,13 @@ internal class PlaybackStateTracker(
             if (seek != null) {
                 val now = clock()
                 val shared = (manualPositionReader?.invoke() ?: 0L).coerceAtLeast(0L)
-                val expected = if (isPlaying) seek.position + (now - seek.startAt) else seek.position
+                val expected =
+                    if (isPlaying) seek.position + (now - seek.startAt) else seek.position
                 val readerUpdated = kotlin.math.abs(shared - seek.sharedAtSeek) > 1L
                 val caughtUp = readerUpdated && (
-                    !isPlaying ||
-                        kotlin.math.abs(shared - expected) <= SEEK_MATCH_TOLERANCE_MS
-                    )
+                        !isPlaying ||
+                                kotlin.math.abs(shared - expected) <= SEEK_MATCH_TOLERANCE_MS
+                        )
                 if (caughtUp || now >= seek.until) {
                     if (manualSeek === seek) manualSeek = null
                     return shared

@@ -7,11 +7,11 @@
 package io.github.proify.lyricon.subscriber.internal.binding
 
 import android.util.Log
+import io.github.proify.lyricon.core.binding.PendingAttemptSlot
+import io.github.proify.lyricon.core.wire.wireJson
 import io.github.proify.lyricon.subscriber.IRemoteService
 import io.github.proify.lyricon.subscriber.ISubscriberBinder
 import io.github.proify.lyricon.subscriber.SubscriberInfo
-import io.github.proify.lyricon.core.binding.PendingAttemptSlot
-import io.github.proify.lyricon.core.wire.wireJson
 
 /**
  * 订阅端暴露给中心服务的 AIDL 适配器。

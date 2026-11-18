@@ -16,6 +16,7 @@ import io.github.proify.lyricon.provider.ProviderConstants.ACTION_REGISTER_PROVI
 import io.github.proify.lyricon.provider.ProviderConstants.EXTRA_BINDER
 import io.github.proify.lyricon.provider.internal.binding.RegistrationBinder
 import io.github.proify.lyricon.provider.internal.connection.ProviderLink
+import io.github.proify.lyricon.provider.internal.registration.RegistrationFlow.Companion.MAX_RETRY_DELAY_MS
 import io.github.proify.lyricon.provider.isDisconnected
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job

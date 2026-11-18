@@ -18,7 +18,6 @@ import io.github.proify.lyricon.subscriber.IRemoteService
 import io.github.proify.lyricon.subscriber.LyriconSubscriber
 import io.github.proify.lyricon.subscriber.SubscriberInfo
 import io.github.proify.lyricon.subscriber.SubscriberStatus
-import io.github.proify.lyricon.subscriber.internal.SubscriberConstants
 import io.github.proify.lyricon.subscriber.internal.binding.RegistrationBinder
 import io.github.proify.lyricon.subscriber.internal.connection.SubscriberLink
 import io.github.proify.lyricon.subscriber.internal.registration.CentralBootReceiver
@@ -138,6 +137,7 @@ internal class LyriconSubscriberImpl(
      */
     private inner class RegistrationCoordinator : CentralBootReceiver.BootListener {
         private val binder = RegistrationBinder(subscriberInfo)
+
         @Volatile
         private var timeoutJob: Job? = null
 
@@ -219,9 +219,9 @@ internal class LyriconSubscriberImpl(
 
         private fun isConnectionCurrent(generation: Long): Boolean =
             generation == connectionGeneration &&
-                wantsConnection &&
-                !destroyed.get() &&
-                status.isConnected()
+                    wantsConnection &&
+                    !destroyed.get() &&
+                    status.isConnected()
 
         init {
             CentralBootReceiver.addBootListener(this)

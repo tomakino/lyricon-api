@@ -8,8 +8,8 @@ package io.github.proify.lyricon.central.internal.subscriber
 
 import android.os.IBinder
 import io.github.proify.lyricon.central.internal.binding.SubscriberServiceStub
-import io.github.proify.lyricon.core.connection.BinderDeathTracker
 import io.github.proify.lyricon.central.internal.connection.RemoteConnection
+import io.github.proify.lyricon.core.connection.BinderDeathTracker
 import io.github.proify.lyricon.subscriber.ISubscriberBinder
 import io.github.proify.lyricon.subscriber.SubscriberInfo
 import java.util.concurrent.atomic.AtomicBoolean

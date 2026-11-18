@@ -6,7 +6,6 @@
 package io.github.proify.lyricon.lyric.model
 
 import io.github.proify.lyricon.lyric.model.extensions.deepCopy
-import io.github.proify.lyricon.lyric.model.extensions.normalize
 import io.github.proify.lyricon.lyric.model.extensions.sortedByBegin
 import io.github.proify.lyricon.lyric.model.interfaces.DeepCopyable
 import io.github.proify.lyricon.lyric.model.interfaces.Normalize

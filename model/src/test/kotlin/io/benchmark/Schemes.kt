@@ -17,8 +17,13 @@ import java.util.TreeMap
  * first(pos): 返回位置 pos 处 "按 begin 升序第一个活动行" (最早开始)
  * forEachAt: 按 begin 升序回调所有活动行
  */
-interface Firstable { fun first(position: Long): LyricLine? }
-interface ForEachable { fun forEachAt(position: Long, action: (LyricLine) -> Unit): Int }
+interface Firstable {
+    fun first(position: Long): LyricLine?
+}
+
+interface ForEachable {
+    fun forEachAt(position: Long, action: (LyricLine) -> Unit): Int
+}
 
 /** 方案 A: 线性扫描(带早停) — 最朴素基线,语义完整 */
 class LinearNavigator(private val source: Array<LyricLine>) : Firstable, ForEachable {
@@ -31,12 +36,15 @@ class LinearNavigator(private val source: Array<LyricLine>) : Firstable, ForEach
         }
         return null
     }
+
     override fun forEachAt(position: Long, action: (LyricLine) -> Unit): Int {
         var count = 0
         for (i in 0 until size) {
             val e = source[i]
             if (e.begin > position) break
-            if (position <= e.end) { action(e); count++ }
+            if (position <= e.end) {
+                action(e); count++
+            }
         }
         return count
     }
@@ -52,7 +60,9 @@ class BinaryNavigator(private val source: Array<LyricLine>) : Firstable {
         var ans = -1
         while (low <= high) {
             val mid = (low + high) ushr 1
-            if (source[mid].begin <= position) { ans = mid; low = mid + 1 } else high = mid - 1
+            if (source[mid].begin <= position) {
+                ans = mid; low = mid + 1
+            } else high = mid - 1
         }
         // 重叠场景: 锚点已结束但更早的行仍活动时返回 null(语义不完整, 报告中将如实标注)
         return if (ans >= 0 && position <= source[ans].end) source[ans] else null
@@ -83,7 +93,9 @@ class CursorNavigator(private val source: Array<LyricLine>) : Firstable, ForEach
         var ans = -1
         while (low <= high) {
             val mid = (low + high) ushr 1
-            if (source[mid].begin <= position) { ans = mid; low = mid + 1 } else high = mid - 1
+            if (source[mid].begin <= position) {
+                ans = mid; low = mid + 1
+            } else high = mid - 1
         }
         return ans
     }
@@ -96,7 +108,9 @@ class CursorNavigator(private val source: Array<LyricLine>) : Firstable, ForEach
                 var steps = 0
                 while (cursor + 1 < size && source[cursor + 1].begin <= position) {
                     cursor++
-                    if (++steps > 8) { cursor = upperBound(position); break }
+                    if (++steps > 8) {
+                        cursor = upperBound(position); break
+                    }
                 }
             }
         } else {
@@ -140,7 +154,9 @@ class CursorNavigator(private val source: Array<LyricLine>) : Firstable, ForEach
             i--
         }
         var count = 0
-        for (k in n - 1 downTo 0) { action(source[activeBuffer[k]]); count++ }
+        for (k in n - 1 downTo 0) {
+            action(source[activeBuffer[k]]); count++
+        }
         return count
     }
 }
@@ -184,7 +200,9 @@ class TreeMapNavigator(private val source: Array<LyricLine>) : Firstable, ForEac
             e = tree.lowerEntry(e.key)
         }
         var count = 0
-        for (k in activeBuffer.indices.reversed()) { action(activeBuffer[k]); count++ }
+        for (k in activeBuffer.indices.reversed()) {
+            action(activeBuffer[k]); count++
+        }
         return count
     }
 }
@@ -220,7 +238,9 @@ class IntervalTreeNavigator(private val source: Array<LyricLine>) : Firstable, F
         if (node < 0 || subMaxEnd[node] < position) return count
         val e = source[node]
         var c = count
-        if (e.begin <= position && position <= e.end) { buffer[c] = node; c++ }
+        if (e.begin <= position && position <= e.end) {
+            buffer[c] = node; c++
+        }
         if (e.begin <= position) c = query(right[node], position, c)
         return query(left[node], position, c)
     }

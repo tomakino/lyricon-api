@@ -7,13 +7,13 @@
 package io.github.proify.lyricon.provider.internal.binding
 
 import android.util.Log
+import io.github.proify.lyricon.core.binding.PendingAttemptSlot
+import io.github.proify.lyricon.core.wire.wireJson
 import io.github.proify.lyricon.provider.IProviderBinder
 import io.github.proify.lyricon.provider.IProviderService
 import io.github.proify.lyricon.provider.IRemoteService
 import io.github.proify.lyricon.provider.ProviderInfo
 import io.github.proify.lyricon.provider.internal.connection.RemoteServiceReceiver
-import io.github.proify.lyricon.core.binding.PendingAttemptSlot
-import io.github.proify.lyricon.core.wire.wireJson
 
 /**
  * 提供端暴露给中心服务的注册 AIDL 适配器。

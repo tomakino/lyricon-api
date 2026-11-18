@@ -100,49 +100,49 @@ internal class ConnectionStateMachine(
         trigger: ConnectionTrigger,
         serviceWasBound: Boolean,
     ): TransitionResult = when (trigger) {
-            ConnectionTrigger.REGISTER ->
-                if (status.isDisconnected()) {
-                    TransitionResult(ConnectionStatus.CONNECTING, null)
-                } else {
-                    TransitionResult(status, null)
-                }
-
-            ConnectionTrigger.REGISTRATION_TIMEOUT ->
-                if (status == ConnectionStatus.CONNECTING) {
-                    TransitionResult(
-                        ConnectionStatus.DISCONNECTED,
-                        ConnectionEvent.CONNECT_TIMEOUT
-                    )
-                } else {
-                    TransitionResult(status, null)
-                }
-
-            ConnectionTrigger.SERVICE_READY -> {
-                val notice = if (hasConnectedBefore) {
-                    ConnectionEvent.RECONNECTED
-                } else {
-                    ConnectionEvent.CONNECTED
-                }
-                hasConnectedBefore = true
-                TransitionResult(ConnectionStatus.CONNECTED, notice)
+        ConnectionTrigger.REGISTER ->
+            if (status.isDisconnected()) {
+                TransitionResult(ConnectionStatus.CONNECTING, null)
+            } else {
+                TransitionResult(status, null)
             }
 
-            ConnectionTrigger.SERVICE_LOST ->
-                TransitionResult(
-                    ConnectionStatus.DISCONNECTED_REMOTE,
-                    ConnectionEvent.DISCONNECTED.takeIf { serviceWasBound }
-                )
-
-            ConnectionTrigger.PREEMPT ->
+        ConnectionTrigger.REGISTRATION_TIMEOUT ->
+            if (status == ConnectionStatus.CONNECTING) {
                 TransitionResult(
                     ConnectionStatus.DISCONNECTED,
-                    ConnectionEvent.DISCONNECTED.takeIf { serviceWasBound }
+                    ConnectionEvent.CONNECT_TIMEOUT
                 )
+            } else {
+                TransitionResult(status, null)
+            }
 
-            ConnectionTrigger.USER_DISCONNECT ->
-                TransitionResult(
-                    ConnectionStatus.DISCONNECTED_USER,
-                    ConnectionEvent.DISCONNECTED.takeIf { serviceWasBound }
-                )
+        ConnectionTrigger.SERVICE_READY -> {
+            val notice = if (hasConnectedBefore) {
+                ConnectionEvent.RECONNECTED
+            } else {
+                ConnectionEvent.CONNECTED
+            }
+            hasConnectedBefore = true
+            TransitionResult(ConnectionStatus.CONNECTED, notice)
         }
+
+        ConnectionTrigger.SERVICE_LOST ->
+            TransitionResult(
+                ConnectionStatus.DISCONNECTED_REMOTE,
+                ConnectionEvent.DISCONNECTED.takeIf { serviceWasBound }
+            )
+
+        ConnectionTrigger.PREEMPT ->
+            TransitionResult(
+                ConnectionStatus.DISCONNECTED,
+                ConnectionEvent.DISCONNECTED.takeIf { serviceWasBound }
+            )
+
+        ConnectionTrigger.USER_DISCONNECT ->
+            TransitionResult(
+                ConnectionStatus.DISCONNECTED_USER,
+                ConnectionEvent.DISCONNECTED.takeIf { serviceWasBound }
+            )
+    }
 }
