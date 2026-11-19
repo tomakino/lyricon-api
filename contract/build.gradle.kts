@@ -4,6 +4,7 @@ plugins {
     id("kotlin-parcelize")
     signing
     id("com.vanniktech.maven.publish")
+    alias(libs.plugins.dokka)
 }
 
 group = "io.github.proify.lyricon"
@@ -33,6 +34,7 @@ dependencies {
     implementation(libs.androidx.appcompat.resources)
     testImplementation(libs.junit)
 }
+
 val version: String = rootProject.extra.get("contractVersion") as String
 
 mavenPublishing {

@@ -14,7 +14,7 @@ package io.github.proify.lyricon.central.internal
 internal object CentralConstants {
 
     /** 调试开关。 */
-    const val DEBUG: Boolean = false
+    internal const val DEBUG: Boolean = false
 
     /** 注册提供端广播动作。 */
     internal const val ACTION_REGISTER_PROVIDER: String =

@@ -11,6 +11,7 @@ kotlinxSerializationJson = "1.13.0"
 jetbrainsKotlinJvm = "2.4.21"
 yukihook-bom = "1.5.0"
 ksp = "2.3.6"
+dokka = "2.3.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -34,3 +35,4 @@ android-library = { id = "com.android.library", version.ref = "agp" }
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 jetbrains-kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "jetbrainsKotlinJvm" }
+dokka = { id = "org.jetbrains.dokka", version.ref = "dokka" }

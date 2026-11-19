@@ -6,7 +6,9 @@
 
 package io.github.proify.lyricon.central.internal.binding
 
+import android.os.Build
 import android.os.SharedMemory
+import androidx.annotation.RequiresApi
 import io.github.proify.lyricon.central.CentralRegistry
 import io.github.proify.lyricon.central.internal.subscriber.SubscriberConnection
 import io.github.proify.lyricon.central.internal.subscriber.SubscriberSession

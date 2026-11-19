@@ -4,6 +4,7 @@ plugins {
     signing
     id("com.vanniktech.maven.publish")
     alias(libs.plugins.kotlin.serialization)
+    alias(libs.plugins.dokka)
 }
 
 group = "io.github.proify.lyricon.lyric"

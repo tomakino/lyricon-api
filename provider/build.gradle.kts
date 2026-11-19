@@ -6,6 +6,7 @@ plugins {
     id("kotlin-parcelize")
     signing
     id("com.vanniktech.maven.publish")
+    alias(libs.plugins.dokka)
 }
 
 group = "io.github.proify.lyricon"
